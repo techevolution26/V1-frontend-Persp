@@ -16,28 +16,28 @@ export default function PerceptionsPage() {
       const topicData = await res1.json();
       setTopics(topicData);
 
-      try {
-        const res2 = await fetch("/api/perceptions", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+      // try {
+      //   const res2 = await fetch("/api/perceptions", {
+      //     headers: { Authorization: `Bearer ${token}` },
+      //   });
 
-        if (!res2.ok) {
-          const text = await res2.text('json'); // safer than assuming it's JSON  //remove 'json' just debugging
-          console.error("API error response:", text);
-          throw new Error(`Error fetching perceptions: ${res2.status}`);
-        }
+      //   if (!res2.ok) {
+      //     const text = await res2.text('json'); // safer than assuming it's JSON  //Later i'll remove 'json' just debugging
+      //     console.error("API error response:", text);
+      //     throw new Error(`Error fetching perceptions: ${res2.status}`);
+      //   }
 
-        const perData = await res2.json();
-        setPerceptions(perData);
-      } catch (err) {
-        console.error("Fetch error:", err);
-      }
+      //   const perData = await res2.json();
+      //   setPerceptions(perData);
+      // } catch (err) {
+      //   console.error("Fetch error:", err);
+      // }
 
-      // const res2 = await fetch('/api/perceptions', {
-      //   headers: { Authorization: `Bearer ${token}` }
-      // })
-      // const perData = await res2.json()
-      // setPerceptions(perData)
+      const res2 = await fetch("/api/perceptions", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const perData = await res2.json();
+      setPerceptions(perData);
     }
 
     fetchData();
