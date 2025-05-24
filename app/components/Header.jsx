@@ -1,17 +1,49 @@
+// components/Header.jsx
 "use client";
 
-export default function Header() {
-  return (
-    <div className="flex items-center space-x-4">
-      <div className="h-8 w-8 rounded-full bg-gray-300" />
-      <h1 className="text-lg font-semibold">Welcome Back, John</h1>
-      <div className="flex-1" />
+import { useEffect, useState } from "react";
 
-      <button aria-label="Menu" className="p-2">
-        <span className="block h-0.5 w-6 bg-gray-600 mb-1"></span>
-        <span className="block h-0.5 w-6 bg-gray-600 mb-1"></span>
-        <span className="block h-0.5 w-6 bg-gray-600"></span>
-      </button>
-    </div>
+export default function Header() {
+  const [user, setUser] = useState(null);
+
+  // Fetching the logged-in user on mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    fetch("/api/user", {
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Not authenticated");
+        return res.json();
+      })
+      .then((data) => setUser(data))
+      .catch(() => setUser(null));
+  }, []);
+
+  return (
+    <header className="flex items-center space-x-4 p-4 bg-white shadow">
+      {/* Avatar (or placeholder) */}
+      {user && user.avatar_url ? (
+        <img
+          src={user.avatar_url}
+          alt={user.name}
+          className="h-8 w-8 rounded-full object-cover"
+        />
+      ) : (
+        <div className="h-8 w-8 rounded-full bg-gray-300" />
+      )}
+
+      {/* Greeting */}
+      <h1 className="text-lg font-semi-bold">
+        {user ? `Welcome Back, ${user.name}` : "Welcome"}
+      </h1>
+
+      <div className="flex-1" />
+    </header>
   );
 }
