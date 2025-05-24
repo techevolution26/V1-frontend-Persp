@@ -1,4 +1,5 @@
 // components/ProfileEditor.jsx
+
 "use client";
 import { useState, useRef, useEffect } from "react";
 
@@ -8,6 +9,32 @@ export default function ProfileEditor({ initialUser }) {
   const [editing, setEditing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  //  uploadAvatar helper
+  const uploadAvatar = async (file) => {
+    setLoading(true);
+    const form = new FormData();
+    form.append("avatar", file);
+
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        body: form,
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Upload failed: ${res.status}`);
+      }
+      const updated = await res.json();
+      setUser(updated);
+    } catch (err) {
+      console.error("Avatar upload error:", err);
+      alert("Upload failed: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetching currently logged-in user’s ID
   useEffect(() => {
@@ -24,29 +51,34 @@ export default function ProfileEditor({ initialUser }) {
       .catch(() => setCurrentUserId(null));
   }, []);
 
-  // Determine ownership
+  // Determining ownership
   const isOwnProfile = currentUserId === initialUser.id;
 
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    // Build FormData (this form includes avatar, profession, bio)
     const form = new FormData(e.target);
-    if (inputFile.current.files[0]) {
-      form.append("avatar", inputFile.current.files[0]);
-    }
 
-    const token = localStorage.getItem("token");
-    const res = await fetch("/api/user/profile", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: form,
-    });
-    const updated = await res.json();
-    setUser(updated);
-    setEditing(false);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        body: form,
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Save failed: ${res.status}`);
+      }
+      const updated = await res.json();
+      setUser(updated);
+      setEditing(false);
+    } catch (err) {
+      console.error("Profile save error:", err);
+      alert("Save failed: " + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -54,17 +86,20 @@ export default function ProfileEditor({ initialUser }) {
       <form onSubmit={handleSave} className="flex-1 space-y-4">
         <div className="relative">
           <img
-            src={
-              user.avatar_url ||
-              "/default-avatar.png" ||
-              "https://via.placeholder.com/100"
-            }
+            src={user.avatar_url || "/default-avatar.png"}
             alt="avatar"
             className="h-24 w-24 rounded-full object-cover"
           />
 
-          {/* only show edit-icon if they own the profile */}
-          {isOwnProfile && !editing && (
+          {/* Loading overlay */}
+          {loading && (
+            <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-full">
+              <span className="text-gray-700">Uploading…</span>
+            </div>
+          )}
+
+          {/* only show edit-icon if they own  profile */}
+          {isOwnProfile && !editing && !loading && (
             <button
               type="button"
               onClick={() => inputFile.current.click()}
@@ -85,7 +120,11 @@ export default function ProfileEditor({ initialUser }) {
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) {
+              // preview immediately
               setUser((u) => ({ ...u, avatar_url: URL.createObjectURL(file) }));
+
+              // auto-uploading
+              uploadAvatar(file);
             }
           }}
         />
@@ -129,14 +168,12 @@ export default function ProfileEditor({ initialUser }) {
           <>
             <h1 className="text-3xl font-bold">{user.name}</h1>
             {user.profession && (
-              <p className="text-gray-700-italic italic">{user.profession}</p>
+              <p className="italic text-gray-700">{user.profession}</p>
             )}
-            {user.bio && (
-              <p className="mt-2 text-gray-600-italic ">{user.bio}</p>
-            )}
+            {user.bio && <p className="mt-2 text-gray-600">{user.bio}</p>}
 
             {/* only the owner can enter edit mode */}
-            {isOwnProfile && (
+            {isOwnProfile && !loading && (
               <button
                 type="button"
                 onClick={() => setEditing(true)}
