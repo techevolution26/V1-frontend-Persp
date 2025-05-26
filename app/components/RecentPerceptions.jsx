@@ -1,66 +1,67 @@
 "use client";
+
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import PerceptionCard from "./PerceptionCard";
 
 export default function RecentPerceptions({ userId }) {
   const [list, setList] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  //   useEffect(() => {
-  //     fetch(`/api/users/${userId}/perceptions`)
-  //       .then((r) => r.json())
-  //       .then(setList);
-  //   }, [userId]);
-
-  //   if (list.length === 0) {
-  //     return <p className="text-gray-500">No Perceptions Yet.</p>;
-  //   }
+  const [loading, setLoading] = useState(true);
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   useEffect(() => {
     async function load() {
+      setLoading(true);
+      setError(null);
+
       try {
         const res = await fetch(`/api/users/${userId}/perceptions`, {
-          headers: { Accept: "application/json" },
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         });
         if (!res.ok) throw new Error(`Status ${res.status}`);
         const data = await res.json();
-        // ensure we only ever set an array
-        setList(Array.isArray(data) ? data : []);
+        setList(data);
       } catch (err) {
+        console.error("Error loading recent perceptions:", err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
     load();
-  }, [userId]);
+  }, [userId, token]);
 
-  if (loading) return <p>Loading…</p>;
+  if (loading) return <p>Loading recent perceptions…</p>;
   if (error) return <p className="text-red-500">Error: {error}</p>;
-  if (!Array.isArray(list) || list.length === 0) {
-    return <p className="text-gray-500">No perceptions yet.</p>;
-  }
+  if (list.length === 0) return <p>No perceptions yet.</p>;
 
-  // taking up to 5 items
-  const items = list.slice(0, 5);
+  // show only the first 5
+  const slice = list.slice(0, 5);
 
   return (
-    <ul className="space-y-4">
-      {items.map((p) => (
-        <li key={p.id} className="border p-4 rounded-lg">
-          <p className="font-medium">{p.body}</p>
-          <p className="text-sm text-gray-500">
-            {new Date(p.created_at).toLocaleDateString()}
-          </p>
-          <Link
-            href={`/perceptions/${p.id}`}
-            className="text-blue-600 text-sm hover:underline"
-          >
-            View details →
-          </Link>
-        </li>
+    <div className="space-y-4">
+      {slice.map((p) => (
+        <PerceptionCard
+          key={p.id}
+          perception={p}
+          onLike={async (id) => {
+            await fetch(`/api/perceptions/${id}/like`, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            // optimistic update
+            setList((curr) =>
+              curr.map((x) =>
+                x.id === id ? { ...x, likes_count: x.likes_count + 1 } : x
+              )
+            );
+          }}
+        />
       ))}
-    </ul>
+    </div>
   );
 }

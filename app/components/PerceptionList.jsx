@@ -1,5 +1,8 @@
+// components/PerceptionsList.jsx
 "use client";
-import { useEffect, useState } from "react";
+
+import { useState, useEffect } from "react";
+import PerceptionCard from "./PerceptionCard";
 
 export default function PerceptionsList({ topicId }) {
   const [list, setList] = useState([]);
@@ -9,50 +12,60 @@ export default function PerceptionsList({ topicId }) {
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   useEffect(() => {
-    async function load() {
+    async function fetchPerceptions() {
+      setLoading(true);
+      setError(null);
+
+      const params = new URLSearchParams({ topic_id: topicId });
       try {
-        const res = await fetch(
-          `http://localhost:8000/api/topics/${topicId}/perceptions`,
-          {
-            headers: {
-              Accept: "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!res.ok) throw new Error(`Status ${res.status}`);
+        const res = await fetch(`/api/perceptions?${params}`, {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Status ${res.status}`);
+        }
+
         const data = await res.json();
         setList(data);
       } catch (err) {
-        console.error(err);
+        console.error("Error loading perceptions:", err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
-    load();
+
+    fetchPerceptions();
   }, [topicId, token]);
 
   if (loading) return <p>Loading perceptions…</p>;
   if (error) return <p className="text-red-500">Error: {error}</p>;
-  if (list.length === 0) return <p>No perceptions in this topic.</p>;
+  if (list.length === 0) return <p>No perceptions yet in this topic.</p>;
 
   return (
-    <ul className="space-y-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {list.map((p) => (
-        <li key={p.id} className="border p-4 rounded-lg">
-          <div className="flex items-center mb-2">
-            <div className="h-8 w-8 rounded-full bg-gray-300 mr-2" />
-            <span className="font-medium">{p.user.name}</span>
-            <span className="ml-auto text-sm text-gray-500">⋮</span>
-          </div>
-          <p className="mb-2">{p.body}</p>
-          <div className="flex space-x-4 text-sm text-gray-600">
-            <button>❤ {p.likes_count}</button>
-            <button>💬 {p.comments_count}</button>
-          </div>
-        </li>
+        <PerceptionCard
+          key={p.id}
+          perception={p}
+          onLike={async (id) => {
+            await fetch(`/api/perceptions/${id}/like`, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            // optimistically update UI
+            setList((curr) =>
+              curr.map((x) =>
+                x.id === id ? { ...x, likes_count: x.likes_count + 1 } : x
+              )
+            );
+          }}
+        />
       ))}
-    </ul>
+    </div>
   );
 }

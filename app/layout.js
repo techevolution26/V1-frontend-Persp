@@ -30,7 +30,7 @@ export default function RootLayout({ children }) {
   const handleNewClick = () => setShowForm(true);
   const handleFormSuccess = (newPerception) => {
     setShowForm(false);
-    // Optionally you can broadcast this new perception via context or events
+    // Optionally I can broadcast this newPerception via context or events
   };
   const handleFormClose = () => setShowForm(false);
   return (
