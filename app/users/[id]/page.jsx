@@ -1,5 +1,6 @@
 import RecentPerceptions from "../../components/RecentPerceptions";
 import ProfileEditor from "../../components/ProfileEditor";
+import FollowButton from "@/app/components/FollowButton";
 // import TopicsCarousel from "../../components/TopicsCarousel";
 import Link from "next/link";
 

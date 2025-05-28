@@ -1,11 +1,11 @@
-// app/api/users/[id]/following/route.js
+// app/api/users/[id]/followers/route.js
 
 export async function GET(request, { params }) {
   const token = request.headers.get('authorization') || ''
-  const {id} = await params
+    const { id } = await params
 
   const res = await fetch(
-    `http://localhost:8000/api/users/${id}/following`,
+    `http://localhost:8000/api/users/${id}/followers`,
     {
       headers: {
         Accept:        'application/json',

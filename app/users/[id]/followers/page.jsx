@@ -6,7 +6,7 @@ import TopicsCarousel from "../../../components/TopicsCarousel";
 export default async function FollowersPage({ params }) {
   const { id } = await params;
 
-  // Fetch user info
+  // Fetching user info
   const userRes = await fetch(`http://localhost:8000/api/users/${id}`, {
     headers: { Accept: "application/json" },
   });

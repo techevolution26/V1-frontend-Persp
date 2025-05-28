@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import PerceptionCard from "./components/PerceptionCard";
 import Link from "next/link";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
-// import TopicsCarousel from './components/TopicsCarousel'
 
 export default function HomePage() {
   const [topics, setTopics] = useState([]);
@@ -43,10 +42,14 @@ export default function HomePage() {
   if (loading) return <p>Loading…</p>;
 
   // grouping by topic showing up to 3 each
-  const byTopic = topics.map((topic) => ({
-    ...topic,
-    items: perceptions.filter((p) => p.topic.id === topic.id).slice(0, 3),
-  }));
+  const byTopic = topics
+    .map((topic) => ({
+      ...topic,
+      items: perceptions.filter((p) => p.topic?.id === topic.id).slice(0, 3), // Added optional chaining
+    }))
+    .filter((group) => group.items.length > 0);
+
+  //
 
   const handleLike = async (id) => {
     await fetch(`/api/perceptions/${id}/like`, {
@@ -69,7 +72,21 @@ export default function HomePage() {
           <h2 className="text-xl font-semibold mb-4">{group.name}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {group.items.map((p) => (
-              <PerceptionCard key={p.id} perception={p} onLike={handleLike} />
+              <PerceptionCard
+                key={p.id}
+                perception={p}
+                onLike={async (id) => {
+                  await fetch(`/api/perceptions/${id}/like`, {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${token}` },
+                  });
+                  setPerceptions(
+                    perceptions.map((x) =>
+                      x.id === id ? { ...x, likes_count: x.likes_count + 1 } : x
+                    )
+                  );
+                }}
+              />
             ))}
 
             {group.items.length >= 3 && (

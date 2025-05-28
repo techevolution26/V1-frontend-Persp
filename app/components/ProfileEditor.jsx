@@ -2,6 +2,7 @@
 
 "use client";
 import { useState, useRef, useEffect } from "react";
+import FollowButton from "./FollowButton";
 
 export default function ProfileEditor({ initialUser }) {
   const inputFile = useRef();
@@ -166,7 +167,12 @@ export default function ProfileEditor({ initialUser }) {
           </>
         ) : (
           <>
-            <h1 className="text-3xl font-bold">{user.name}</h1>
+            <div className="flex items-center space-x-4">
+              <h1 className="text-3xl font-bold">{user.name}</h1>
+
+              {/* only show FollowButton when viewing someone else */}
+              {!isOwnProfile && <FollowButton profileUserId={user.id} />}
+            </div>
             {user.profession && (
               <p className="italic text-gray-700">{user.profession}</p>
             )}

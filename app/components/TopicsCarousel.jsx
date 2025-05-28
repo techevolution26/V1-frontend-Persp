@@ -35,7 +35,7 @@ export default function TopicsCarousel({ onSelect }) {
           key={topic.id}
           onClick={() => onSelect?.(topic)}
           className="flex-shrink-0 flex flex-col items-center justify-center w-20 h-20 rounded-full bg-gray-200 hover:bg-gray-300"
-          title={topic.name}
+          title={topic.description}
         >
           {/*icon URL: */}
           {/* <img src={topic.icon_url} alt={topic.name} className="w-12 h-12 rounded-full mb-1" /> */}
