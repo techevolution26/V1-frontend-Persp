@@ -5,8 +5,10 @@ import { useEffect, useState } from "react";
 import PerceptionCard from "./components/PerceptionCard";
 import Link from "next/link";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const router = useRouter();
   const [topics, setTopics] = useState([]);
   const [perceptions, setPerceptions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,18 +52,28 @@ export default function HomePage() {
     .filter((group) => group.items.length > 0);
 
   //
+  const handleComment = (id) => {
+    router.push(`/perceptions/${id}`);
+  };
 
-  const handleLike = async (id) => {
-    await fetch(`/api/perceptions/${id}/like`, {
-      method: "POST",
+  // Handling a like click
+  const handleLike = async (p) => {
+    const method = p.liked ? "DELETE" : "POST"; // use the property you store
+    const res = await fetch(`/api/perceptions/${p.id}/like`, {
+      method,
       headers: { Authorization: `Bearer ${token}` },
     });
-    setPerceptions(
-      perceptions.map((p) =>
-        p.id === id ? { ...p, likes_count: p.likes_count + 1 } : p
-      )
+    if (!res.ok) {
+      console.error("Toggle like failed:", res.status);
+      return;
+    }
+    const { liked, likes_count } = await res.json();
+    setPerceptions((list) =>
+      list.map((x) => (x.id === p.id ? { ...x, liked, likes_count } : x))
     );
   };
+
+  if (loading) return <p>Loading…</p>;
 
   return (
     <main className="p-6 space-y-12">
@@ -75,17 +87,7 @@ export default function HomePage() {
               <PerceptionCard
                 key={p.id}
                 perception={p}
-                onLike={async (id) => {
-                  await fetch(`/api/perceptions/${id}/like`, {
-                    method: "POST",
-                    headers: { Authorization: `Bearer ${token}` },
-                  });
-                  setPerceptions(
-                    perceptions.map((x) =>
-                      x.id === id ? { ...x, likes_count: x.likes_count + 1 } : x
-                    )
-                  );
-                }}
+                onLike={() => handleLike(p)}
               />
             ))}
 

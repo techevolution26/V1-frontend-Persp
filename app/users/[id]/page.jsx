@@ -25,7 +25,7 @@ export default async function UserProfile({ params }) {
           Joined {new Date(user.created_at).toLocaleDateString()}
         </p>
         <div className="flex space-x-6 mt-2 text-sm text-gray-700">
-          <Link href={`/users/${id}/perceptions`} className="hover:underline">
+          <Link href={`/users/${id}/`} className="hover:underline">
             {user.perceptions_count} perceptions
           </Link>
 

@@ -1,12 +1,16 @@
+//app/components/RecentPerceptions.jsx
+
 "use client";
 
 import { useState, useEffect } from "react";
 import PerceptionCard from "./PerceptionCard";
+import useLikeToggle from "../hooks/useLikeToggle";
 
 export default function RecentPerceptions({ userId }) {
   const [list, setList] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const toggleLike = useLikeToggle();
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
@@ -35,6 +39,14 @@ export default function RecentPerceptions({ userId }) {
     load();
   }, [userId, token]);
 
+  function handleLikeUpdate(pid, liked, likes_count) {
+    setList((curr) =>
+      curr.map((p) =>
+        p.id === pid ? { ...p, liked_by_user: liked, likes_count } : p
+      )
+    );
+  }
+
   if (loading) return <p>Loading recent perceptions…</p>;
   if (error) return <p className="text-red-500">Error: {error}</p>;
   if (list.length === 0) return <p>No perceptions yet.</p>;
@@ -48,18 +60,7 @@ export default function RecentPerceptions({ userId }) {
         <PerceptionCard
           key={p.id}
           perception={p}
-          onLike={async (id) => {
-            await fetch(`/api/perceptions/${id}/like`, {
-              method: "POST",
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            // optimistic update
-            setList((curr) =>
-              curr.map((x) =>
-                x.id === id ? { ...x, likes_count: x.likes_count + 1 } : x
-              )
-            );
-          }}
+          onLike={() => toggleLike(p, handleLikeUpdate)}
         />
       ))}
     </div>

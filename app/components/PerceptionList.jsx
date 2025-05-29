@@ -4,12 +4,14 @@
 import { useState, useEffect } from "react";
 import NewPerceptionForm from "./NewPerceptionForm";
 import PerceptionCard from "./PerceptionCard";
+import UseLikeToggle from "../hooks/useLikeToggle";
 
 export default function PerceptionsList({ topicId }) {
   const [list, setList] = useState([]);
   const [topic, setTopic] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const toggleLike = UseLikeToggle();
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -77,17 +79,15 @@ export default function PerceptionsList({ topicId }) {
         <PerceptionCard
           key={p.id}
           perception={p}
-          onLike={async (id) => {
-            await fetch(`/api/perceptions/${id}/like`, {
-              method: "POST",
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            setList((curr) =>
-              curr.map((x) =>
-                x.id === id ? { ...x, likes_count: x.likes_count + 1 } : x
-              )
-            );
-          }}
+          onLike={() =>
+            toggleLike(p, (id, liked, likes_count) => {
+              setList((curr) =>
+                curr.map((x) =>
+                  x.id === id ? { ...x, liked_by_user: liked, likes_count } : x
+                )
+              );
+            })
+          }
         />
       ))}
     </div>

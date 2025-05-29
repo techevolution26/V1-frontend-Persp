@@ -1,12 +1,12 @@
+//app/components/PerceptionCard
+
 "use client";
 
 import Link from "next/link";
 import { HeartIcon, ChatBubbleOvalLeftIcon } from "@heroicons/react/24/outline";
-import { formatDistanceToNow, format } from "date-fns";
+import { formatDistanceToNow, format, isThisYear } from "date-fns";
 
 export default function PerceptionCard({ perception, onLike }) {
-
-
   function formatRelativeTime(dateString) {
     const date = new Date(dateString);
     const now = new Date();
@@ -89,20 +89,22 @@ export default function PerceptionCard({ perception, onLike }) {
       {/* Footer */}
       <div className="mt-auto px-4 py-2 flex items-center space-x-6 text-gray-600">
         <button
-          onClick={() => onLike && onLike(id)}
+          onClick={onLike}
           className="flex items-center space-x-1 hover:text-red-500"
         >
           <HeartIcon className="h-5 w-5" />
           <span className="text-sm">{likes}</span>
         </button>
 
-        <Link
-          href={`/perceptions/${id}`}
-          className="flex items-center space-x-1 hover:text-blue-500"
-        >
-          <ChatBubbleOvalLeftIcon className="h-5 w-5" />
-          <span className="text-sm">{comments}</span>
-        </Link>
+        <button>
+          <Link
+            href={`/perceptions/${id}`}
+            className="flex items-center space-x-1 hover:text-blue-500"
+          >
+            <ChatBubbleOvalLeftIcon className="h-5 w-5" />
+            <span className="text-sm">{comments}</span>
+          </Link>
+        </button>
       </div>
     </div>
   );

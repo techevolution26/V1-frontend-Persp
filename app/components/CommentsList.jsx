@@ -1,48 +1,100 @@
+// components/CommentsList.jsx
+
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import NewReplyForm from "./NewReplyForm";
 
-export default function CommentsList({ perceptionId }) {
-  const [comments, setComments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(`/api/perceptions/${perceptionId}/comments`, {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error(`Status ${res.status}`);
-        const data = await res.json();
-        setComments(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [perceptionId, token]);
-
-  if (loading) return <p>Loading comments…</p>;
-  if (error) return <p className="text-red-500">Error: {error}</p>;
-  if (comments.length === 0) return <p>No comments yet.</p>;
+function CommentItem({ comment, onReplyAdded, depth = 0 }) {
+  const [openForm, setOpenForm] = useState(false);
+  const [openReplies, setOpenReplies] = useState(false);
+  const replies = Array.isArray(comment.replies) ? comment.replies : [];
 
   return (
-    <ul className="space-y-2">
+    <li
+      style={{ paddingLeft: depth * 16 }}
+      className={`border-l mb-4 ${
+        depth > 0 ? "border-gray-300" : "border-gray-500"
+      }`}
+    >
+      <div>
+        <p className="font-semibold">{comment.user.name}</p>
+        <p>{comment.body}</p>
+
+        {comment.media_url && /\.(mp4|webm|ogg)$/i.test(comment.media_url) ? (
+          <video src={comment.media_url} controls className="mt-2 max-w-full" />
+        ) : (
+          comment.media_url && (
+            <img src={comment.media_url} alt="" className="mt-2 max-w-full" />
+          )
+        )}
+
+        <small className="block text-gray-500">
+          {new Date(comment.created_at).toLocaleString()}
+        </small>
+      </div>
+
+      {/* Reply / Toggle buttons */}
+      <div className="flex space-x-4 text-sm mt-2">
+        <button
+          onClick={() => setOpenForm((v) => !v)}
+          className="text-blue-600"
+        >
+          {openForm ? "Cancel reply" : "Reply"}
+        </button>
+
+        {replies.length > 0 && (
+          <button
+            onClick={() => setOpenReplies((v) => !v)}
+            className="text-blue-600"
+          >
+            {openReplies
+              ? `Hide replies (${replies.length})`
+              : `View replies (${replies.length})`}
+          </button>
+        )}
+      </div>
+
+      {/* Inline reply form */}
+      {openForm && (
+        <div className="mt-2">
+          <NewReplyForm
+            parentId={comment.id}
+            perceptionId={comment.perception_id}
+            onAdd={(newReply) => {
+              onReplyAdded(comment.id, newReply);
+              setOpenForm(false);
+              setOpenReplies(true);
+            }}
+          />
+        </div>
+      )}
+
+      {/* Nested replies */}
+      {openReplies && replies.length > 0 && (
+        <ul className="mt-4 space-y-4">
+          {replies.map((child) => (
+            <CommentItem
+              key={child.id}
+              comment={child}
+              onReplyAdded={onReplyAdded}
+              depth={depth + 1}
+            />
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+export default function CommentsList({ comments, onReplyAdded }) {
+  if (!Array.isArray(comments) || comments.length === 0) {
+    return <p className="text-gray-500">No comments yet.</p>;
+  }
+
+  return (
+    <ul className="space-y-6">
       {comments.map((c) => (
-        <li key={c.id} className="border-l-2 pl-3 py-2">
-          <p className="text-sm font-semibold">{c.user.name}</p>
-          <p>{c.body}</p>
-          <small className="text-gray-500">
-            {new Date(c.created_at).toLocaleString()}
-          </small>
-        </li>
+        <CommentItem key={c.id} comment={c} onReplyAdded={onReplyAdded} />
       ))}
     </ul>
   );
