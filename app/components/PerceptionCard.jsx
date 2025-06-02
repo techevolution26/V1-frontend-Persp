@@ -5,8 +5,14 @@
 import Link from "next/link";
 import { HeartIcon, ChatBubbleOvalLeftIcon } from "@heroicons/react/24/outline";
 import { formatDistanceToNow, format, isThisYear } from "date-fns";
+import { useRouter } from "next/navigation";
 
 export default function PerceptionCard({ perception, onLike }) {
+  const router = useRouter();
+  const perceptionCardClicked = () => {
+    router.push(`/perceptions/${id}`);
+  };
+
   function formatRelativeTime(dateString) {
     const date = new Date(dateString);
     const now = new Date();
@@ -40,7 +46,7 @@ export default function PerceptionCard({ perception, onLike }) {
   const isVideo = media?.match(/\.(mp4|webm|ogg)$/i);
 
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden flex flex-col">
+    <div className="bg-white shadow rounded-lg overflow-hidden flex flex-col" onDoubleClick={perceptionCardClicked}>
       {/* Header */}
       <div className="flex items-center px-4 py-2">
         <img

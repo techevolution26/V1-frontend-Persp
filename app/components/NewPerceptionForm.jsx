@@ -15,7 +15,6 @@ export default function NewPerceptionForm({ topics, onSuccess }) {
   const [body, setBody] = useState("");
   const [topicId, setTopicId] = useState(topics[0]?.id || "");
   const [mediaPreview, setMediaPreview] = useState(null);
-  2;
   const [mediaFile, setMediaFile] = useState(null);
   const [mediaType, setMediaType] = useState(null); // "image" or "video"
   const [loading, setLoading] = useState(false);
@@ -76,7 +75,7 @@ export default function NewPerceptionForm({ topics, onSuccess }) {
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 bg-white rounded-xl shadow-lg max-h-[90vh] overflow-y-auto">
       <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <SparklesIcon className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+        <SparklesIcon className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" />
         Share Your Perception
       </h2>
 

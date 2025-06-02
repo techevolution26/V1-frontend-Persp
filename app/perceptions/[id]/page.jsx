@@ -14,42 +14,31 @@ export default function PerceptionDetailPage() {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [me, setMe] = useState(null);
   const toggleLike = useLikeToggle();
 
-  // Helper: recursively ensuring every node has replies: []
-  function normalize(list) {
-    return (list || []).map((c) => ({
-      ...c,
-      replies: normalize(c.replies),
-    }));
-  }
+  // ensure every comment has replies: []
+  const normalize = (list = []) =>
+    list.map(c => ({ ...c, replies: normalize(c.replies) }));
 
-  // Fetching perception + comments
   useEffect(() => {
     async function loadAll() {
       try {
-        const [pRes, cRes] = await Promise.all([
-          fetch(`/api/perceptions/${id}`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }),
-          // setPerception(await res.json()),
-
-          fetch(`/api/perceptions/${id}/comments`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }),
+        const token = localStorage.getItem("token") || "";
+        // fetch me, perception, comments in parallel
+        const [uRes, pRes, cRes] = await Promise.all([
+          fetch("/api/user", { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`/api/perceptions/${id}`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`/api/perceptions/${id}/comments`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
-        if (!pRes.ok)
-          throw new Error(`Perception fetch failed: ${pRes.status}`);
-        if (!cRes.ok)
-          throw new Error(`Comments fetch failed:   ${cRes.status}`);
+        if (!uRes.ok) throw new Error("Failed to fetch user");
+        if (!pRes.ok) throw new Error("Failed to fetch perception");
+        if (!cRes.ok) throw new Error("Failed to fetch comments");
 
-        const [pData, cData] = await Promise.all([pRes.json(), cRes.json()]);
+        const [uData, pData, cData] = await Promise.all([uRes.json(), pRes.json(), cRes.json()]);
 
+        setMe(uData);
         setPerception(pData);
         setComments(normalize(cData));
       } catch (e) {
@@ -61,34 +50,29 @@ export default function PerceptionDetailPage() {
     loadAll();
   }, [id]);
 
-  function handleLikeUpdate(pid, liked, likes_count) {
-    setPerception((p) =>
-      p.id === pid ? { ...p, liked_by_user: liked, likes_count } : p
-    );
-  }
-  // Safely prepending a new top‐level comment
-  const addComment = (newComment) => {
-    setComments((prev) => [{ ...newComment, replies: [] }, ...prev]);
-  };
+  // have they already commented?
+  const hasCommented =
+    me && comments.some(c => c.user.id === me.id);
 
-  // Safely inserting a reply under the correct parent
+  // owner can always see
+  const isOwner = me && perception?.user?.id === me.id;
+
+  // prepend a new comment
+  const addComment = c => setComments(cs => [{ ...c, replies: [] }, ...cs]);
+
+  // nested replies insertion
   const addReply = (parentId, reply) => {
-    function insert(items) {
-      return items.map((item) => {
-        // item.replies is guaranteed an array by normalize
+    function insert(arr) {
+      return arr.map(item => {
         if (item.id === parentId) {
-          return {
-            ...item,
-            replies: [{ ...reply, replies: [] }, ...item.replies],
-          };
+          return { ...item, replies: [{ ...reply, replies: [] }, ...item.replies] };
         }
-        if (item.replies.length) {
-          return { ...item, replies: insert(item.replies) };
-        }
-        return item;
+        return item.replies.length
+          ? { ...item, replies: insert(item.replies) }
+          : item;
       });
     }
-    setComments((prev) => insert(prev));
+    setComments(cs => insert(cs));
   };
 
   if (loading) return <p>Loading…</p>;
@@ -99,16 +83,30 @@ export default function PerceptionDetailPage() {
     <main className="p-6 max-w-3xl mx-auto space-y-8">
       <PerceptionCard
         perception={perception}
-        onLike={() => toggleLike(perception, handleLikeUpdate)}
+        onLike={() => toggleLike(perception, (id, liked, count) => {
+          setPerception(p => p.id === id ? { ...p, liked_by_user: liked, likes_count: count } : p);
+        })}
         detailView
       />
 
       <section className="space-y-6">
         <h3 className="text-2xl font-bold">Perceive</h3>
 
+        {/* always show the “add comment” form */}
         <NewCommentForm perceptionId={perception.id} onAdd={addComment} />
 
-        <CommentsList comments={comments} onReplyAdded={addReply} />
+        {/* only show the existing thread if you’re the owner or have commented */}
+        {
+          isOwner || hasCommented
+            ? (
+              <CommentsList comments={comments} onReplyAdded={addReply} />
+            ) : (
+              comments.length > 0
+                ? <p className="text-gray-500">
+                  Enter your Perception to see other's Perspectives..</p>
+                : null
+            )
+        }
       </section>
     </main>
   );

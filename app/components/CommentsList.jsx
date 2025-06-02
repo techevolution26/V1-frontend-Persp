@@ -12,12 +12,20 @@ function CommentItem({ comment, onReplyAdded, depth = 0 }) {
   return (
     <li
       style={{ paddingLeft: depth * 16 }}
-      className={`border-l mb-4 ${
-        depth > 0 ? "border-gray-300" : "border-gray-500"
-      }`}
+      className={`border-l mb-4 ${depth > 0 ? "border-gray-300" : "border-gray-500"
+        }`}
     >
       <div>
-        <p className="font-semibold">{comment.user.name}</p>
+        <div className="flex items-center space-x-2 mb-2">
+          <img
+            src={comment.user.avatar_url || "/default-avatar.png"}
+            alt={comment.user.name}
+            className="h-8 w-8 rounded-full object-cover"
+          /> <p className="font-semibold">{comment.user.name}</p>
+          <p className="text-xs text-grey-300 italic">{comment.user.profession}</p>
+
+        </div>
+
         <p>{comment.body}</p>
 
         {comment.media_url && /\.(mp4|webm|ogg)$/i.test(comment.media_url) ? (

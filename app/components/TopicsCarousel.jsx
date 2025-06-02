@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import { useRouter } from "next/navigation";
 /**
  * TopicsCarousel
  * Props:
@@ -11,6 +11,7 @@ export default function TopicsCarousel({ onSelect }) {
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     fetch("/api/topics", {
@@ -33,7 +34,10 @@ export default function TopicsCarousel({ onSelect }) {
       {topics.map((topic) => (
         <button
           key={topic.id}
-          onClick={() => onSelect?.(topic)}
+          onClick={() => {
+            onSelect?.(topic);
+            router.push(`/topics/${topic.id}`);
+          }}
           className="flex-shrink-0 flex flex-col items-center justify-center w-20 h-20 rounded-full bg-gray-200 hover:bg-gray-300"
           title={topic.description}
         >

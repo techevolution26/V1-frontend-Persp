@@ -18,14 +18,20 @@ export default function RootLayout({ children }) {
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   // Fetching topics passing them into the form
-  useEffect(() => {
-    fetch("/api/topics", {
-      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+ 
+useEffect(() => {
+  fetch("/api/topics", {
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+  })
+    .then((r) => {
+      if (!r.ok) throw new Error(`Topics fetch failed: ${r.status}`);
+      return r.json();
     })
-      .then((r) => r.json())
-      .then(setTopics)
-      .catch(console.error);
-  }, [token]);
+    .then((topicsArray) => {
+      setTopics(topicsArray);
+    })
+    .catch(console.error);
+}, [token]);
 
   const handleNewClick = () => setShowForm(true);
   const handleFormSuccess = (newPerception) => {
