@@ -6,75 +6,56 @@ import NewPerceptionForm from "./NewPerceptionForm";
 import PerceptionCard from "./PerceptionCard";
 import UseLikeToggle from "../hooks/useLikeToggle";
 
-export default function PerceptionsList({ topicId }) {
+export default function PerceptionsList({ topic }) {
   const [list, setList] = useState([]);
-  const [topic, setTopic] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const toggleLike = UseLikeToggle();
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  //loading topic metadata (name) and existing perceptions
   useEffect(() => {
+    if (!topic?.id) return;
+
     setLoading(true);
     setError(null);
 
-    // fetching topic name
-    fetch(`/api/topics/${topicId}`, { headers: { Accept: "application/json" } })
-      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then((t) => setTopic(t))
-      .catch((err) => console.error("Error loading topic:", err));
-
-    // fetching perceptions
-    const params = new URLSearchParams({ topic_id: topicId });
+    const params = new URLSearchParams({ topic_id: topic.id });
     fetch(`/api/perceptions?${params}`, {
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((r) => r.ok ? r.json() : Promise.reject(r.status))
       .then(setList)
       .catch((err) => {
         console.error("Error loading perceptions:", err);
-        setError(err.toString());
+        setError(typeof err === "string" ? err : "Failed to load perceptions.");
       })
       .finally(() => setLoading(false));
-  }, [topicId, token]);
+  }, [topic?.id, token]);
 
-  if (loading) return <p>Loading…</p>;
+  if (loading) return <p className="text-gray-500">Loading…</p>;
   if (error) return <p className="text-red-500">Error: {error}</p>;
 
-  //EMPTY STATE: showing the inline form
   if (list.length === 0) {
     return (
-      <div className="text-center py-8 space-y-4">
+      <div className="text-center py-10 space-y-6">
         <p className="text-gray-500 text-lg">
-          No perceptions yet in <strong>{topic?.name}</strong>
+          No perceptions yet in <strong>{topic.name}</strong>
         </p>
-
-        {/*
-           Passing a single‐item topics array so the form dropdown is
-           prefilled with our current topic.
-        */}
-        {topic && (
-          <NewPerceptionForm
-            topics={[{ id: topic.id, name: topic.name }]}
-            onSuccess={(newP) => {
-              // prepending the newly created perception to the list
-              setList([newP, ...list]);
-            }}
-          />
-        )}
+        <p className="text-sm text-gray-400">Be the first to contribute a thought.</p>
+        <NewPerceptionForm
+          topics={[{ id: topic.id, name: topic.name }]}
+          onSuccess={(newP) => setList([newP, ...list])}
+        />
       </div>
     );
   }
 
-  //Otherwise render cards
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
       {list.map((p) => (
         <PerceptionCard
           key={p.id}
@@ -88,6 +69,7 @@ export default function PerceptionsList({ topicId }) {
               );
             })
           }
+          className="h-full"
         />
       ))}
     </div>

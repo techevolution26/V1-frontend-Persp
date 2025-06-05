@@ -1,8 +1,6 @@
 // app/api/user/route.js
-
 export async function GET(request) {
   const token = request.headers.get("authorization") || "";
-
   const res = await fetch("http://localhost:8000/api/user", {
     headers: {
       Accept: "application/json",
@@ -11,10 +9,15 @@ export async function GET(request) {
   });
 
   const text = await res.text();
-  const contentType = res.headers.get("content-type") || "application/json";
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { message: text };
+  }
 
-  return new Response(text, {
+  return new Response(JSON.stringify(data), {
     status: res.status,
-    headers: { "Content-Type": contentType },
+    headers: { "Content-Type": "application/json" },
   });
 }

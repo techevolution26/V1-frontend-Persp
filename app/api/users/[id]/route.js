@@ -1,19 +1,19 @@
-// app/api/users/[id]/route.js
-
 export async function GET(request, { params }) {
-  // unwraping dynamic segment
-  const { id } = await params;
-
+  const { id } = params;
   const res = await fetch(`http://localhost:8000/api/users/${id}`, {
     headers: { Accept: "application/json" },
   });
 
-  // forward status/text back to the client
   const text = await res.text();
-  const contentType = res.headers.get("content-type") || "application/json";
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { message: text };
+  }
 
-  return new Response(text, {
+  return new Response(JSON.stringify(data), {
     status: res.status,
-    headers: { "Content-Type": contentType },
+    headers: { "Content-Type": "application/json" },
   });
 }

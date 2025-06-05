@@ -1,5 +1,6 @@
 "use client";
-import { PlusIcon, BellIcon, HomeIcon, HomeModernIcon } from "@heroicons/react/24/outline";
+
+import { PlusIcon, BellIcon, HomeIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -21,35 +22,49 @@ export default function Sidebar({ onNewClick = () => { } }) {
         if (!res.ok) throw new Error("Not authenticated");
         return res.json();
       })
-      .then((data) => setUser(data))
+      .then(setUser)
       .catch(() => setUser(null));
   }, []);
 
-  const handleHomeClick = () => {
-    router.push("/");
-  };
-
-  const handleUserAvatar = () => {
-    router.push(`/users/${user.id}`);
-  };
-
+  const go = (path) => router.push(path);
 
   return (
-    <>
-      <button title="Create New" onClick={onNewClick}>
+    <nav className="flex flex-col items-center space-y-6">
+      <button
+        onClick={onNewClick}
+        title="New Perception"
+        aria-label="Create New"
+        className="hover:bg-gray-100 p-2 rounded-full transition"
+      >
         <PlusIcon className="h-6 w-6 text-gray-600" />
       </button>
 
-      <button title="Notifications">
+      <button
+        title="Notifications"
+        aria-label="Notifications"
+        className="hover:bg-gray-100 p-2 rounded-full transition"
+      >
         <BellIcon className="h-6 w-6 text-gray-600" />
       </button>
-      <button title="Home" onClick={handleHomeClick}>
+
+      <button
+        onClick={() => go("/")}
+        title="Home"
+        aria-label="Home"
+        className="hover:bg-gray-100 p-2 rounded-full transition"
+      >
         <HomeIcon className="h-6 w-6 text-gray-600" />
       </button>
-      <button title="My Profile" onClick={handleUserAvatar}>
-        {user && user.avatar_url ? (
+
+      <button
+        onClick={() => user && go(`/users/${user.id}`)}
+        title="My Profile"
+        aria-label="Profile"
+        className="hover:ring-2 ring-indigo-300 p-1 rounded-full transition"
+      >
+        {user?.avatar_url ? (
           <img
-            src={user.avatar_url || `/default-avatar.png`}
+            src={user.avatar_url}
             alt={user.name}
             className="h-8 w-8 rounded-full object-cover"
           />
@@ -57,6 +72,6 @@ export default function Sidebar({ onNewClick = () => { } }) {
           <div className="h-8 w-8 rounded-full bg-gray-300" />
         )}
       </button>
-    </>
+    </nav>
   );
 }

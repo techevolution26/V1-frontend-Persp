@@ -1,5 +1,3 @@
-// --- app/page.js ---
-
 "use client";
 import { useEffect, useState } from "react";
 import PerceptionCard from "./components/PerceptionCard";
@@ -16,17 +14,24 @@ export default function HomePage() {
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   useEffect(() => {
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
     async function load() {
-      // loading topics
       const t = await fetch("/api/topics", {
         headers: { Authorization: `Bearer ${token}` },
       }).then((r) => r.json());
       setTopics(t);
 
-      // loading perceptions
       const res2 = await fetch("/api/perceptions", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (res2.status === 401) {
+        router.push("/login");
+        return;
+      }
 
       let perData = [];
       if (res2.ok) {
@@ -38,71 +43,70 @@ export default function HomePage() {
       setPerceptions(perData);
       setLoading(false);
     }
+
     load();
-  }, [token]);
+  }, [token, router]);
 
-  if (loading) return <p>Loading…</p>;
+  if (loading)
+    return <p className="text-center py-12 text-gray-500">Loading…</p>;
 
-  // grouping by topic showing up to 3 each
   const byTopic = topics
     .map((topic) => ({
       ...topic,
-      items: perceptions.filter((p) => p.topic?.id === topic.id).slice(0, 3), // Added optional chaining
+      items: perceptions.filter((p) => p.topic?.id === topic.id).slice(0, 3),
     }))
     .filter((group) => group.items.length > 0);
 
-  //
-  const handleComment = (id) => {
-    router.push(`/perceptions/${id}`);
-  };
-
-  // Handling a like click
   const handleLike = async (p) => {
-    const method = p.liked ? "DELETE" : "POST"; // use the property you store
+    const method = p.liked ? "DELETE" : "POST";
     const res = await fetch(`/api/perceptions/${p.id}/like`, {
       method,
       headers: { Authorization: `Bearer ${token}` },
     });
-    if (!res.ok) {
-      console.error("Toggle like failed:", res.status);
-      return;
-    }
+    if (!res.ok) return;
+
     const { liked, likes_count } = await res.json();
     setPerceptions((list) =>
       list.map((x) => (x.id === p.id ? { ...x, liked, likes_count } : x))
     );
   };
 
-  if (loading) return <p>Loading…</p>;
-
   return (
-    <main className="p-6 space-y-12">
-      {/* <TopicsCarousel /> */}
-
+    <main className="p-4 sm:p-6 space-y-12 max-w-7xl mx-auto">
       {byTopic.map((group) => (
         <section key={group.id}>
-          <h2 className="text-xl font-semibold mb-4">{group.name}</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              {group.name}
+            </h2>
+            {group.items.length >= 3 && (
+              <Link href={`/topics/${group.id}`}>
+                <button className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-full text-sm transition-all duration-200 shadow-md hover:scale-105">
+                  See More
+                  <ArrowRightIcon className="w-4 h-4" />
+                </button>
+              </Link>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {group.items.map((p) => (
-              <PerceptionCard
+              <div
                 key={p.id}
-                perception={p}
-                onLike={() => handleLike(p)}
-              />
-            ))}
-
-            {group.items.length >= 3 && (
-              <div className="">
-                <Link href={`/topics/${group.id}`} passHref>
-                  <button className="flex items-center justify-center w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-200 hover:scale-110">
-                    <ArrowRightIcon className="w-6 h-6" />
-                  </button>
-                </Link>
+                className="transition-transform transform hover:scale-[1.015]"
+              >
+                <PerceptionCard perception={p} onLike={() => handleLike(p)} />
               </div>
-            )}
+            ))}
           </div>
         </section>
       ))}
+
+      {byTopic.length === 0 && (
+        <p className="text-center text-gray-500 text-sm mt-12">
+          No perceptions available yet. Check back soon!
+        </p>
+      )}
     </main>
   );
 }

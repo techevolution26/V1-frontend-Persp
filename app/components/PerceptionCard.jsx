@@ -46,7 +46,7 @@ export default function PerceptionCard({ perception, onLike }) {
   const isVideo = media?.match(/\.(mp4|webm|ogg)$/i);
 
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden flex flex-col" onDoubleClick={perceptionCardClicked}>
+    <div className="bg-white shadow-xl rounded-lg overflow-hidden flex flex-col" onDoubleClick={perceptionCardClicked}>
       {/* Header */}
       <div className="flex items-center px-4 py-2">
         <img
@@ -93,7 +93,7 @@ export default function PerceptionCard({ perception, onLike }) {
       ) : null}
 
       {/* Footer */}
-      <div className="mt-auto px-4 py-2 flex items-center space-x-6 text-gray-600">
+      <div className="mt-auto px-4 py-2 flex items-center space-x-6 text-gray-600 border-t border-gray-100">
         <button
           onClick={onLike}
           className="flex items-center space-x-1 hover:text-red-500"

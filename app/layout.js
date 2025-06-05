@@ -1,70 +1,82 @@
 "use client";
 import "./globals.css";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import TopicsCarousel from "./components/TopicsCarousel";
 import NewPerceptionForm from "./components/NewPerceptionForm";
-
-const metadata = {
-  title: "Perception App",
-  description: "Share and browse perceptions by topic",
-};
+import LoginModal from "./components/LoginModal";
+import RegisterModal from "./components/RegisterModal";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function RootLayout({ children }) {
   const [showForm, setShowForm] = useState(false);
   const [topics, setTopics] = useState([]);
+  const [showTopics, setShowTopics] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const pathname = usePathname();
+
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  // Fetching topics passing them into the form
- 
-useEffect(() => {
-  fetch("/api/topics", {
-    headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-  })
-    .then((r) => {
-      if (!r.ok) throw new Error(`Topics fetch failed: ${r.status}`);
-      return r.json();
+  useEffect(() => {
+    fetch("/api/topics", {
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
     })
-    .then((topicsArray) => {
-      setTopics(topicsArray);
-    })
-    .catch(console.error);
-}, [token]);
+      .then((r) => {
+        if (!r.ok) throw new Error(`Topics fetch failed: ${r.status}`);
+        return r.json();
+      })
+      .then(setTopics)
+      .catch(console.error);
+  }, [token]);
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const diff = currentScrollY - lastScrollY;
+
+      if (!ticking && Math.abs(diff) > 10) {
+        window.requestAnimationFrame(() => {
+          setShowTopics(diff < 0); // scroll up
+          lastScrollY = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleNewClick = () => setShowForm(true);
-  const handleFormSuccess = (newPerception) => {
-    setShowForm(false);
-    // Optionally I can broadcast this newPerception via context or events
-  };
   const handleFormClose = () => setShowForm(false);
+  const handleFormSuccess = () => setShowForm(false);
+
   return (
     <html lang="en">
-      <body className="flex h-screen overflow-hidden">
-        {/* Sidebar on the left */}
-        <aside className="w-16 bg-white border-r flex flex-col items-center py-4 space-y-6">
+      <body className="min-h-screen flex flex-col bg-white">
+        {/* Sidebar fixed if needed */}
+        <aside className="w-16 fixed left-0 top-0 h-full bg-white border-r flex flex-col items-center py-4 space-y-6 z-50">
           <Sidebar onNewClick={handleNewClick} />
         </aside>
 
-        {/* Main content area */}
-        <div className="flex-1 flex flex-col overflow-auto">
-          {/* Top header */}
-          <header className="flex items-center justify-between px-6 py-4 border-b">
+        <div className="pl-16 flex flex-col min-h-screen w-full">
+          <header className="px-6 py-4 border-b bg-white z-30 sticky top-0">
             <Header />
           </header>
 
-          {/* Topics carousel */}
-          <div className="px-6 py-4 border-b">
-            <TopicsCarousel />
-          </div>
+          {/* Animate with Framer Motion */}
+          <TopicsCarousel topics={topics} visible={showTopics} />
 
-          {/* Page-specific content */}
-          <main className="flex-1 overflow-auto p-6 bg-gray-50">
-            {children}
-          </main>
+          <main className="flex-grow">{children}</main>
         </div>
-        {/* Modal Overlay for New perception form */}
+
         {showForm && (
           <div
             className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
@@ -89,6 +101,9 @@ useEffect(() => {
             </div>
           </div>
         )}
+
+        {pathname === "/login" && <LoginModal />}
+        {pathname === "/register" && <RegisterModal />}
       </body>
     </html>
   );

@@ -1,6 +1,6 @@
 import RecentPerceptions from "../../components/RecentPerceptions";
 import ProfileEditor from "../../components/ProfileEditor";
-import FollowButton from "@/app/components/FollowButton";
+import FollowButton from "../../components/FollowButton";
 // import TopicsCarousel from "../../components/TopicsCarousel";
 import Link from "next/link";
 
@@ -11,7 +11,7 @@ export default async function UserProfile({ params }) {
     headers: { Accept: "application/json" },
   });
 
-  if (!res.ok) throw new Error("Failed to fetch User ${id} data");
+  if (!res.ok) throw new Error(`Failed to fetch User ${id} data`);
   const user = await res.json();
 
   return (
