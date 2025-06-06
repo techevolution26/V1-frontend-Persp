@@ -8,42 +8,31 @@ import TopicsCarousel from "./components/TopicsCarousel";
 import NewPerceptionForm from "./components/NewPerceptionForm";
 import LoginModal from "./components/LoginModal";
 import RegisterModal from "./components/RegisterModal";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
+import useTopics from "./hooks/useTopics";
 
 export default function RootLayout({ children }) {
-  const [showForm, setShowForm] = useState(false);
-  const [topics, setTopics] = useState([]);
-  const [showTopics, setShowTopics] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const pathname = usePathname();
-
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  useEffect(() => {
-    fetch("/api/topics", {
-      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-    })
-      .then((r) => {
-        if (!r.ok) throw new Error(`Topics fetch failed: ${r.status}`);
-        return r.json();
-      })
-      .then(setTopics)
-      .catch(console.error);
-  }, [token]);
+  const [showForm, setShowForm] = useState(false);
+  const [showTopics, setShowTopics] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  const { topics, loading } = useTopics(token);
 
   useEffect(() => {
-    let lastScrollY = window.scrollY;
     let ticking = false;
 
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const diff = currentScrollY - lastScrollY;
+      const currentY = window.scrollY;
+      const diff = currentY - lastScrollY;
 
       if (!ticking && Math.abs(diff) > 10) {
         window.requestAnimationFrame(() => {
-          setShowTopics(diff < 0); // scroll up
-          lastScrollY = currentScrollY;
+          setShowTopics(diff < 0); // show if scrolling up
+          setLastScrollY(currentY);
           ticking = false;
         });
         ticking = true;
@@ -52,18 +41,13 @@ export default function RootLayout({ children }) {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const handleNewClick = () => setShowForm(true);
-  const handleFormClose = () => setShowForm(false);
-  const handleFormSuccess = () => setShowForm(false);
+  }, [lastScrollY]);
 
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col bg-white">
-        {/* Sidebar fixed if needed */}
         <aside className="w-16 fixed left-0 top-0 h-full bg-white border-r flex flex-col items-center py-4 space-y-6 z-50">
-          <Sidebar onNewClick={handleNewClick} />
+          <Sidebar onNewClick={() => setShowForm(true)} />
         </aside>
 
         <div className="pl-16 flex flex-col min-h-screen w-full">
@@ -71,36 +55,37 @@ export default function RootLayout({ children }) {
             <Header />
           </header>
 
-          {/* Animate with Framer Motion */}
-          <TopicsCarousel topics={topics} visible={showTopics} />
+          <TopicsCarousel topics={topics} visible={showTopics && !loading} />
 
           <main className="flex-grow">{children}</main>
         </div>
 
-        {showForm && (
-          <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-            onClick={handleFormClose}
-          >
+        <AnimatePresence>
+          {showForm && (
             <div
-              className="bg-white rounded-lg p-6 w-full max-w-lg"
-              onClick={(e) => e.stopPropagation()}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+              onClick={() => setShowForm(false)}
             >
-              <button
-                className="float-right text-gray-500"
-                onClick={handleFormClose}
+              <div
+                className="bg-white rounded-lg p-6 w-full max-w-lg"
+                onClick={(e) => e.stopPropagation()}
               >
-                ✕
-              </button>
-              <h2 className="text-xl font-bold mb-4">New Perception</h2>
-              <NewPerceptionForm
-                topics={topics}
-                onSuccess={handleFormSuccess}
-                token={token}
-              />
+                <button
+                  className="float-right text-gray-500"
+                  onClick={() => setShowForm(false)}
+                >
+                  ✕
+                </button>
+                <h2 className="text-xl font-bold mb-4">New Perception</h2>
+                <NewPerceptionForm
+                  topics={topics}
+                  onSuccess={() => setShowForm(false)}
+                  token={token}
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </AnimatePresence>
 
         {pathname === "/login" && <LoginModal />}
         {pathname === "/register" && <RegisterModal />}

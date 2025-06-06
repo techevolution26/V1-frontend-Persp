@@ -1,10 +1,30 @@
-// components/PerceptionsList.jsx
 "use client";
 
 import { useState, useEffect } from "react";
 import NewPerceptionForm from "./NewPerceptionForm";
 import PerceptionCard from "./PerceptionCard";
 import UseLikeToggle from "../hooks/useLikeToggle";
+
+function SkeletonCard() {
+  return (
+    <div className="animate-pulse rounded-xl border border-gray-200 p-4 bg-white shadow-sm space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 bg-gray-200 rounded-full" />
+        <div className="flex-1 space-y-2">
+          <div className="h-3 w-1/2 bg-gray-200 rounded" />
+          <div className="h-2 w-1/3 bg-gray-200 rounded" />
+        </div>
+      </div>
+      <div className="h-3 w-full bg-gray-200 rounded" />
+      <div className="h-3 w-5/6 bg-gray-200 rounded" />
+      <div className="h-32 w-full bg-gray-100 rounded" />
+      <div className="flex space-x-4 mt-3">
+        <div className="h-4 w-10 bg-gray-200 rounded" />
+        <div className="h-4 w-10 bg-gray-200 rounded" />
+      </div>
+    </div>
+  );
+}
 
 export default function PerceptionsList({ topic }) {
   const [list, setList] = useState([]);
@@ -36,7 +56,16 @@ export default function PerceptionsList({ topic }) {
       .finally(() => setLoading(false));
   }, [topic?.id, token]);
 
-  if (loading) return <p className="text-gray-500">Loading…</p>;
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+    );
+  }
+
   if (error) return <p className="text-red-500">Error: {error}</p>;
 
   if (list.length === 0) {

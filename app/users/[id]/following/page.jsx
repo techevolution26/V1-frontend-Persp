@@ -1,6 +1,7 @@
 // app/users/[id]/following/page.jsx
 
 import Link from "next/link";
+import UserListGrid from "../../../components/UserListGrid";
 
 export default async function FollowingPage({ params }) {
   const { id } = await params;
@@ -26,31 +27,8 @@ export default async function FollowingPage({ params }) {
       {following.length === 0 ? (
         <p className="text-gray-500">This user isn’t following anyone yet.</p>
       ) : (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {following.map((user) => (
-            <li
-              key={user.id}
-              className="border p-4 rounded-lg flex items-center space-x-4"
-            >
-              <img
-                src={user.avatar_url || "/default-avatar.png"}
-                alt={user.name}
-                className="h-12 w-12 rounded-full object-cover"
-              />
-              <div>
-                <Link
-                  href={`/users/${user.id}`}
-                  className="font-medium hover:underline"
-                >
-                  {user.name}
-                </Link>
-                {user.profession && (
-                  <p className="text-sm text-gray-500">{user.profession}</p>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
+        <UserListGrid users={following} />
+
       )}
     </main>
   );

@@ -1,7 +1,7 @@
 // app/users/[id]/followers/page.jsx
 
 import Link from "next/link";
-import TopicsCarousel from "../../../components/TopicsCarousel";
+import UserListGrid from "../../../components/UserListGrid";
 
 export default async function FollowersPage({ params }) {
   const { id } = await params;
@@ -51,31 +51,8 @@ export default async function FollowersPage({ params }) {
             No one is following {user.name} yet.
           </p>
         ) : (
-          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-            {followers.map((f) => (
-              <li
-                key={f.id}
-                className="border p-4 rounded-lg flex items-center space-x-4"
-              >
-                <img
-                  src={f.avatar_url || "/default-avatar.png"}
-                  alt={f.name}
-                  className="h-10 w-10 rounded-full object-cover"
-                />
-                <div>
-                  <Link
-                    href={`/users/${f.id}`}
-                    className="font-medium hover:underline"
-                  >
-                    {f.name}
-                  </Link>
-                  {f.profession && (
-                    <p className="text-sm text-gray-600">{f.profession}</p>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
+          <UserListGrid users={followers} />
+
         )}
       </section>
     </main>

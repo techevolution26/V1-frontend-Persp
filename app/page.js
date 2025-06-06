@@ -5,6 +5,27 @@ import Link from "next/link";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 
+function SkeletonCard() {
+  return (
+    <div className="animate-pulse rounded-xl border border-gray-200 p-4 bg-white shadow-sm space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 bg-gray-200 rounded-full" />
+        <div className="flex-1 space-y-2">
+          <div className="h-3 w-1/2 bg-gray-200 rounded" />
+          <div className="h-2 w-1/3 bg-gray-200 rounded" />
+        </div>
+      </div>
+      <div className="h-3 w-full bg-gray-200 rounded" />
+      <div className="h-3 w-5/6 bg-gray-200 rounded" />
+      <div className="h-32 w-full bg-gray-100 rounded" />
+      <div className="flex space-x-4 mt-3">
+        <div className="h-4 w-10 bg-gray-200 rounded" />
+        <div className="h-4 w-10 bg-gray-200 rounded" />
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
   const router = useRouter();
   const [topics, setTopics] = useState([]);
@@ -47,9 +68,6 @@ export default function HomePage() {
     load();
   }, [token, router]);
 
-  if (loading)
-    return <p className="text-center py-12 text-gray-500">Loading…</p>;
-
   const byTopic = topics
     .map((topic) => ({
       ...topic,
@@ -70,6 +88,23 @@ export default function HomePage() {
       list.map((x) => (x.id === p.id ? { ...x, liked, likes_count } : x))
     );
   };
+
+  if (loading) {
+    return (
+      <main className="p-4 sm:p-6 space-y-12 max-w-7xl mx-auto">
+        {Array.from({ length: 2 }).map((_, idx) => (
+          <section key={idx}>
+            <div className="h-5 w-1/3 bg-gray-300 rounded mb-6 animate-pulse" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <SkeletonCard key={i} />
+              ))}
+            </div>
+          </section>
+        ))}
+      </main>
+    );
+  }
 
   return (
     <main className="p-4 sm:p-6 space-y-12 max-w-7xl mx-auto">

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { UserPlusIcon, UserMinusIcon } from "@heroicons/react/24/outline";
+import { Spinner } from "./Spinner";
 
 export default function FollowButton({ profileUserId }) {
   const [isFollowing, setIsFollowing] = useState(null);
@@ -13,7 +15,7 @@ export default function FollowButton({ profileUserId }) {
 
     (async () => {
       try {
-        //fetching followers list
+        // Fetching followers list
         const res = await fetch(`/api/users/${profileUserId}/followers`, {
           headers: {
             Accept: "application/json",
@@ -24,14 +26,14 @@ export default function FollowButton({ profileUserId }) {
 
         let payload = await res.json();
 
-        //normalizing to an array
+        // Normalizing to an array
         const followers = Array.isArray(payload)
           ? payload
           : Array.isArray(payload.data)
-          ? payload.data
-          : [];
+            ? payload.data
+            : [];
 
-        //fetching current user
+        // Fetching current user
         const meRes = await fetch("/api/user", {
           headers: {
             Accept: "application/json",
@@ -41,7 +43,7 @@ export default function FollowButton({ profileUserId }) {
         if (!meRes.ok) throw new Error(meRes.status);
         const me = await meRes.json();
 
-        //checking if current user is in followers
+        // Checking if current user is in followers
         setIsFollowing(followers.some((u) => u.id === me.id));
       } catch (err) {
         console.error("FollowButton init error:", err);
@@ -70,7 +72,7 @@ export default function FollowButton({ profileUserId }) {
   };
 
   if (isFollowing === null) {
-    return null; // or a spinner
+    return <div className="w-24 h-10 rounded-lg bg-gray-100 animate-pulse" />;
   }
 
   return (
@@ -78,16 +80,33 @@ export default function FollowButton({ profileUserId }) {
       onClick={handleClick}
       disabled={loading}
       className={`
-        px-4 py-2 rounded 
-        ${
-          isFollowing
-            ? "bg-red-500 text-white hover:bg-red-600"
-            : "bg-blue-600 text-white hover:bg-blue-700"
+        relative flex items-center justify-center gap-2
+        px-4 py-2 rounded-lg font-medium text-sm
+        transition-all duration-200 ease-out
+        shadow-sm hover:shadow-md
+        ${isFollowing
+          ? "bg-white text-gray-800 border border-gray-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+          : "bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
         }
-        ${loading ? "opacity-50 cursor-wait" : ""}
+        ${loading ? "opacity-80 pointer-events-none" : ""}
+        overflow-hidden group
       `}
     >
-      {loading ? "…" : isFollowing ? "Unfollow" : "Follow"}
+      {loading ? (
+        <Spinner className="h-4 w-4" />
+      ) : (
+        <>
+          {isFollowing ? (
+            <UserMinusIcon className="h-4 w-4" />
+          ) : (
+            <UserPlusIcon className="h-4 w-4" />
+          )}
+          <span>{isFollowing ? "Following" : "Follow"}</span>
+        </>
+      )}
+
+      {/* Animated background effect */}
+      <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-200" />
     </button>
   );
 }
