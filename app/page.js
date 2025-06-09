@@ -1,6 +1,9 @@
+//app/page.js
 "use client";
 import { useEffect, useState } from "react";
 import PerceptionCard from "./components/PerceptionCard";
+import EditPerceptionModal from "./components/EditPerceptionModal";
+import ConfirmDeleteModal from "./components/ConfirmDeleteModal";
 import Link from "next/link";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
@@ -30,7 +33,10 @@ export default function HomePage() {
   const router = useRouter();
   const [topics, setTopics] = useState([]);
   const [perceptions, setPerceptions] = useState([]);
+  const [editTarget, setEditTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
@@ -61,6 +67,7 @@ export default function HomePage() {
       } else {
         console.error("Error fetching perceptions:", res2.status);
       }
+
       setPerceptions(perData);
       setLoading(false);
     }
@@ -87,6 +94,28 @@ export default function HomePage() {
     setPerceptions((list) =>
       list.map((x) => (x.id === p.id ? { ...x, liked, likes_count } : x))
     );
+  };
+
+  const handleEdit = (perception) => {
+    setEditTarget(perception);
+  };
+
+  const handleDelete = (perception) => {
+    setDeleteTarget(perception);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const res = await fetch(`/api/perceptions/${deleteTarget.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      setPerceptions((curr) => curr.filter((p) => p.id !== deleteTarget.id));
+    } else {
+      alert("Failed to delete perception.");
+    }
+    setDeleteTarget(null);
   };
 
   if (loading) {
@@ -130,7 +159,12 @@ export default function HomePage() {
                 key={p.id}
                 className="transition-transform transform hover:scale-[1.015]"
               >
-                <PerceptionCard perception={p} onLike={() => handleLike(p)} />
+                <PerceptionCard
+                  perception={p}
+                  onLike={() => handleLike(p)}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
               </div>
             ))}
           </div>
@@ -141,6 +175,26 @@ export default function HomePage() {
         <p className="text-center text-gray-500 text-sm mt-12">
           No perceptions available yet. Check back soon!
         </p>
+      )}
+
+      {editTarget && (
+        <EditPerceptionModal
+          perception={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSave={(updated) => {
+            setPerceptions((curr) =>
+              curr.map((x) => (x.id === updated.id ? updated : x))
+            );
+            setEditTarget(null);
+          }}
+        />
+      )}
+
+      {deleteTarget && (
+        <ConfirmDeleteModal
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={confirmDelete}
+        />
       )}
     </main>
   );

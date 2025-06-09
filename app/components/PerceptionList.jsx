@@ -1,8 +1,11 @@
+// app/components/PerceptionsList.jsx
 "use client";
 
 import { useState, useEffect } from "react";
 import NewPerceptionForm from "./NewPerceptionForm";
 import PerceptionCard from "./PerceptionCard";
+import EditPerceptionModal from "./EditPerceptionModal";
+import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import UseLikeToggle from "../hooks/useLikeToggle";
 
 function SkeletonCard() {
@@ -30,6 +33,8 @@ export default function PerceptionsList({ topic }) {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const toggleLike = UseLikeToggle();
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -47,7 +52,7 @@ export default function PerceptionsList({ topic }) {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((r) => r.ok ? r.json() : Promise.reject(r.status))
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then(setList)
       .catch((err) => {
         console.error("Error loading perceptions:", err);
@@ -55,6 +60,23 @@ export default function PerceptionsList({ topic }) {
       })
       .finally(() => setLoading(false));
   }, [topic?.id, token]);
+
+  const handleEdit = (p) => setEditTarget(p);
+  const handleDelete = (p) => setDeleteTarget(p);
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const res = await fetch(`/api/perceptions/${deleteTarget.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      setList((curr) => curr.filter((p) => p.id !== deleteTarget.id));
+    } else {
+      alert("Delete failed.");
+    }
+    setDeleteTarget(null);
+  };
 
   if (loading) {
     return (
@@ -84,23 +106,45 @@ export default function PerceptionsList({ topic }) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
-      {list.map((p) => (
-        <PerceptionCard
-          key={p.id}
-          perception={p}
-          onLike={() =>
-            toggleLike(p, (id, liked, likes_count) => {
-              setList((curr) =>
-                curr.map((x) =>
-                  x.id === id ? { ...x, liked_by_user: liked, likes_count } : x
+    <>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+        {list.map((p) => (
+          <PerceptionCard
+            key={p.id}
+            perception={p}
+            onLike={() =>
+              toggleLike(p, (id, liked, likes_count) =>
+                setList((curr) =>
+                  curr.map((x) =>
+                    x.id === id ? { ...x, liked_by_user: liked, likes_count } : x
+                  )
                 )
-              );
-            })
-          }
-          className="h-full"
+              )
+            }
+            onEdit={() => handleEdit(p)}
+            onDelete={() => handleDelete(p)}
+            className="h-full"
+          />
+        ))}
+      </div>
+
+      {editTarget && (
+        <EditPerceptionModal
+          perception={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSave={(updated) => {
+            setList((curr) => curr.map((x) => (x.id === updated.id ? updated : x)));
+            setEditTarget(null);
+          }}
         />
-      ))}
-    </div>
+      )}
+
+      {deleteTarget && (
+        <ConfirmDeleteModal
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
+    </>
   );
 }

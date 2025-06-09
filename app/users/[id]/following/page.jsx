@@ -6,7 +6,7 @@ import UserListGrid from "../../../components/UserListGrid";
 export default async function FollowingPage({ params }) {
   const { id } = await params;
 
-  // Fetching from our Next proxy
+  // Fetching following
   const res = await fetch(`http://localhost:3000/api/users/${id}/following`, {
     headers: { Accept: "application/json" },
   });
@@ -14,7 +14,23 @@ export default async function FollowingPage({ params }) {
   if (!res.ok) {
     throw new Error(`Failed to load following: ${res.status}`);
   }
-  const following = await res.json();
+
+  let following = [];
+  const json = await res.json();
+  following = Array.isArray(json)
+    ? json
+    : Array.isArray(json.data)
+      ? json.data
+      : [];
+
+  // Fetching current user (anonymous)
+  const meRes = await fetch("http://localhost:8000/api/user", {
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  const me = meRes.ok ? await meRes.json() : null;
 
   return (
     <main className="p-6">
@@ -27,8 +43,7 @@ export default async function FollowingPage({ params }) {
       {following.length === 0 ? (
         <p className="text-gray-500">This user isn’t following anyone yet.</p>
       ) : (
-        <UserListGrid users={following} />
-
+        <UserListGrid users={following} currentUserId={me?.id} />
       )}
     </main>
   );

@@ -1,3 +1,4 @@
+//app/layout.js
 "use client";
 import "./globals.css";
 import { useState, useEffect } from "react";

@@ -12,9 +12,11 @@
     "@heroicons/react": "^2.2.0",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.16.0",
+    "html2canvas-pro": "^1.5.11",
     "next": "15.3.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-use": "^17.6.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

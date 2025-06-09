@@ -3,8 +3,8 @@
 import Link from "next/link";
 import FollowButton from "./FollowButton";
 
-export default function UserListGrid({ users }) {
-  if (!users || users.length === 0) {
+export default function UserListGrid({ users, currentUserId }) {
+  if (!Array.isArray(users) || users.length === 0) {
     return (
       <div className="text-center py-6 text-gray-500 italic">
         No users to display.
@@ -38,10 +38,12 @@ export default function UserListGrid({ users }) {
             </div>
           </div>
 
-          {/* Follow button */}
-          <div className="shrink-0">
-            <FollowButton profileUserId={user.id} />
-          </div>
+          {Number(user.id) !== Number(currentUserId) && (
+            <div className="shrink-0">
+              <FollowButton profileUserId={user.id} />
+            </div>
+          )}
+
         </li>
       ))}
     </ul>

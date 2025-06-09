@@ -61,11 +61,14 @@ export default function FollowButton({ profileUserId }) {
         method,
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error(res.status);
-      setIsFollowing(!isFollowing);
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Failed: ${res.status} ${errText}`);
+      }
+      setIsFollowing((prev) => !prev);
     } catch (err) {
-      console.error("FollowButton action error:", err);
-      alert("Action failed. Please try again.");
+      console.error("Follow/unfollow error:", err);
+      alert("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
