@@ -1,35 +1,23 @@
+// app/components/ProfileSection.jsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { PencilIcon, XMarkIcon, CheckIcon, CalendarIcon } from "@heroicons/react/24/outline";
+import useCurrentUser from "../hooks/useCurrentUser";
 import FollowButton from "./FollowButton";
 import Link from "next/link";
 
 export default function ProfileSection({ user: initialUser }) {
     const inputFile = useRef();
+    const { user: me, loading: meLoading } = useCurrentUser();
+    const isOwnProfile = me?.id === initialUser.id;
+
+    // Local editable copy of the profile
     const [user, setUser] = useState(initialUser);
     const [editing, setEditing] = useState(false);
-    const [currentUserId, setCurrentUserId] = useState(null);
     const [loading, setLoading] = useState(false);
 
-
-    const isOwnProfile = currentUserId === user.id;
-
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-
-        fetch("/api/user", {
-            headers: {
-                Accept: "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-        })
-            .then(res => res.json())
-            .then(me => setCurrentUserId(me.id))
-            .catch(() => setCurrentUserId(null));
-    }, []);
-
+    // Upload new avatar
     const uploadAvatar = async (file) => {
         setLoading(true);
         const form = new FormData();
@@ -51,12 +39,13 @@ export default function ProfileSection({ user: initialUser }) {
         }
     };
 
+    // Save bio/profession edits
     const handleSave = async (e) => {
         e.preventDefault();
         setLoading(true);
+        const form = new FormData(e.target);
 
         try {
-            const form = new FormData(e.target);
             const res = await fetch("/api/user/profile", {
                 method: "POST",
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -76,7 +65,7 @@ export default function ProfileSection({ user: initialUser }) {
     return (
         <section className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
             <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-[auto,1fr,auto] gap-6 items-start">
-                {/* Avatar Section */}
+                {/* Avatar */}
                 <div className="relative self-center md:self-start">
                     <div className="relative h-28 w-28">
                         <img
@@ -85,16 +74,15 @@ export default function ProfileSection({ user: initialUser }) {
                             className="h-full w-full rounded-full object-cover border-4 border-white shadow-md"
                         />
                         {loading && (
-                            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm">
-                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+                            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-white/80">
+                                <div className="animate-spin h-6 w-6 border-b-2 border-indigo-600 rounded-full"></div>
                             </div>
                         )}
                         {isOwnProfile && !editing && (
                             <button
                                 type="button"
                                 onClick={() => inputFile.current.click()}
-                                className="absolute -bottom-2 -right-2 bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-indigo-700 transition-all"
-                                title="Change Avatar"
+                                className="absolute -bottom-2 -right-2 bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-indigo-700"
                             >
                                 <PencilIcon className="h-4 w-4" />
                             </button>
@@ -108,10 +96,12 @@ export default function ProfileSection({ user: initialUser }) {
                             onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
+                                    // Optimistic preview
                                     setUser((u) => ({ ...u, avatar_url: URL.createObjectURL(file) }));
                                     uploadAvatar(file);
                                 }
                             }}
+                            disabled={loading}
                         />
                     </div>
                 </div>
@@ -127,14 +117,13 @@ export default function ProfileSection({ user: initialUser }) {
                                         name="profession"
                                         defaultValue={user.profession}
                                         placeholder=" "
-                                        className="peer block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-800 shadow-sm 
-                                                focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 
-                                                transition-all duration-200 text-sm sm:text-base"
+                                        className="peer block w-full px-4 py-3 border rounded-xl"
+                                        disabled={loading}
                                     />
-                                    <label className="absolute left-4 top-2 px-1 text-xs text-gray-500 bg-white transition-all duration-200
-                                                    peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-3
-                                                    peer-focus:top-2 peer-focus:text-xs peer-focus:text-indigo-600">
-                                        Username/profession
+                                    <label className="absolute left-4 top-2 px-1 text-xs text-gray-500 bg-white transition-all
+                                    peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm
+                                    peer-focus:top-2 peer-focus:text-indigo-600 peer-focus:text-xs">
+                                        Username / Profession
                                     </label>
                                 </div>
 
@@ -144,13 +133,12 @@ export default function ProfileSection({ user: initialUser }) {
                                         defaultValue={user.bio}
                                         placeholder=" "
                                         rows={4}
-                                        className="peer block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-800 shadow-sm 
-                                                focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 
-                                                transition-all duration-200 text-sm sm:text-base"
+                                        className="peer block w-full px-4 py-3 border rounded-xl"
+                                        disabled={loading}
                                     />
-                                    <label className="absolute left-4 top-2 px-1 text-xs text-gray-500 bg-white transition-all duration-200
-                                                    peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-3
-                                                    peer-focus:top-2 peer-focus:text-xs peer-focus:text-indigo-600">
+                                    <label className="absolute left-4 top-2 px-1 text-xs text-gray-500 bg-white transition-all
+                                    peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm
+                                    peer-focus:top-2 peer-focus:text-indigo-600 peer-focus:text-xs">
                                         Your bio
                                     </label>
                                 </div>
@@ -160,8 +148,7 @@ export default function ProfileSection({ user: initialUser }) {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="flex items-center gap-2 bg-blue-500 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 
-                                            disabled:opacity-60 transition-colors duration-200"
+                                    className="flex items-center gap-2 bg-blue-500 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 disabled:opacity-60"
                                 >
                                     <CheckIcon className="h-5 w-5" />
                                     {loading ? "Saving..." : "Save Changes"}
@@ -169,8 +156,8 @@ export default function ProfileSection({ user: initialUser }) {
                                 <button
                                     type="button"
                                     onClick={() => setEditing(false)}
-                                    className="flex items-center gap-2 text-gray-600 hover:text-gray-800 px-4 py-2.5 rounded-xl border border-gray-200 
-                                            hover:border-gray-300 transition-colors duration-200 hover:bg-red-200"
+                                    className="flex items-center gap-2 text-gray-600 px-4 py-2.5 rounded-xl border hover:bg-red-100"
+                                    disabled={loading}
                                 >
                                     <XMarkIcon className="h-5 w-5" />
                                     Cancel
@@ -184,19 +171,17 @@ export default function ProfileSection({ user: initialUser }) {
                                 {!isOwnProfile && <FollowButton profileUserId={user.id} />}
                             </div>
                             {user.profession && (
-                                <p className="text-indigo-600 font-medium text-lg italic">{user.profession}</p>
+                                <p className="text-indigo-600 italic">{user.profession}</p>
                             )}
                             {user.bio && (
-                                <p className="text-gray-800 whitespace-pre-line leading-relaxed line-clamp-6 max-w-2xl">
+                                <p className="text-gray-800 whitespace-pre-line line-clamp-6">
                                     {user.bio}
                                 </p>
                             )}
                             {isOwnProfile && (
                                 <button
-                                    type="button"
                                     onClick={() => setEditing(true)}
-                                    className="mt-3 inline-flex items-center gap-1.5 text-blue-600 hover:text-indigo-800 text-sm 
-                                            font-medium hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors duration-200"
+                                    className="mt-3 inline-flex items-center gap-1.5 text-blue-600 hover:text-indigo-800 px-3 py-1.5 rounded-lg"
                                 >
                                     <PencilIcon className="h-4 w-4" />
                                     Edit Profile
@@ -206,34 +191,30 @@ export default function ProfileSection({ user: initialUser }) {
                     )}
                 </form>
 
-                {/* Meta stats */}
+                {/* Stats */}
                 <div className="md:self-center space-y-4 w-full md:w-auto">
                     <div className="flex items-center text-sm text-gray-700">
                         <CalendarIcon className="h-4 w-4 mr-1.5" />
                         <span>Joined {new Date(user.created_at).toLocaleDateString()}</span>
                     </div>
-
                     <div className="flex flex-wrap gap-2">
                         <Link
                             href={`/users/${user.id}`}
-                            className="inline-flex items-center bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition text-sm"
+                            className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-sm"
                         >
-                            <span className="font-medium">{user.perceptions_count}</span>
-                            <span className="ml-1">Perceptions</span>
+                            {user.perceptions_count} Perceptions
                         </Link>
                         <Link
                             href={`/users/${user.id}/followers`}
-                            className="inline-flex items-center bg-purple-50 text-purple-700 px-3 py-1.5 rounded-full hover:bg-purple-100 transition text-sm"
+                            className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm"
                         >
-                            <span className="font-medium">{user.follower_count}</span>
-                            <span className="ml-1">Followers</span>
+                            {user.follower_count} Followers
                         </Link>
                         <Link
                             href={`/users/${user.id}/following`}
-                            className="inline-flex items-center bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full hover:bg-blue-100 transition text-sm"
+                            className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm"
                         >
-                            <span className="font-medium">{user.following_count}</span>
-                            <span className="ml-1">Following</span>
+                            {user.following_count} Following
                         </Link>
                     </div>
                 </div>

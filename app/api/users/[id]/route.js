@@ -1,5 +1,7 @@
+//app/api/users/[id]/route.js
+
 export async function GET(request, { params }) {
-  const { id } = params;
+  const { id } = await params;
   const res = await fetch(`http://localhost:8000/api/users/${id}`, {
     headers: { Accept: "application/json" },
   });

@@ -1,6 +1,7 @@
+// app/components/PerceptionCard.jsx
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HeartIcon, ChatBubbleOvalLeftIcon } from "@heroicons/react/24/outline";
@@ -8,6 +9,7 @@ import { useClickAway } from "react-use";
 import { format, isThisYear } from "date-fns";
 import { createPortal } from "react-dom";
 import html2canvas from "html2canvas-pro";
+import useCurrentUser from "../hooks/useCurrentUser";
 
 export default function PerceptionCard({
   perception,
@@ -17,30 +19,16 @@ export default function PerceptionCard({
   onDelete,
   detailView = false,
   showMenu = true,
-  showOwnerActions = false
+  showOwnerActions = false,
 }) {
   const router = useRouter();
-  const [showImagePreview, setShowImagePreview] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState(null);
+  const { user: me } = useCurrentUser();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showImagePreview, setShowImagePreview] = useState(false);
   const menuRef = useRef(null);
   const cardRef = useRef(null);
 
   useClickAway(menuRef, () => setMenuOpen(false));
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-    fetch("/api/user", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-    })
-      .then((r) => r.json())
-      .then((me) => setCurrentUserId(me.id))
-      .catch(() => setCurrentUserId(null));
-  }, []);
 
   const {
     id,
@@ -53,81 +41,61 @@ export default function PerceptionCard({
     created_at,
   } = perception;
 
-  const isOwner = currentUserId === user.id;
-  const isVideo = media?.match(/\.(mp4|webm|ogg)$/i);
+  const isOwner = me?.id === user.id;
+  const isVideo = /\.(mp4|webm|ogg)$/i.test(media || "");
 
   const formatRelativeTime = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
-    const seconds = Math.floor((now - date) / 1000);
-    if (seconds < 60) return "Just now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d`;
-    if (isThisYear(date)) return format(date, "d MMM");
-    return format(date, "d MMM yy");
+    const sec = Math.floor((now - date) / 1000);
+    if (sec < 60) return "Just now";
+    if (sec < 3600) return `${Math.floor(sec / 60)}m`;
+    if (sec < 86400) return `${Math.floor(sec / 3600)}h`;
+    if (sec < 604800) return `${Math.floor(sec / 86400)}d`;
+    return isThisYear(date) ? format(date, "d MMM") : format(date, "d MMM yy");
   };
 
   const handleShare = async () => {
     if (!cardRef.current) return;
-
-    const menu = cardRef.current.querySelector(".perception-menu");
-    const excludedImages = cardRef.current.querySelectorAll(".exclude-from-snapshot");
-
-    if (menu) menu.style.visibility = "hidden";
-    excludedImages.forEach((img) => (img.style.visibility = "hidden"));
+    const menuEl = cardRef.current.querySelector(".perception-menu");
+    const hiddenEls = cardRef.current.querySelectorAll(".exclude-from-snapshot");
+    menuEl && (menuEl.style.visibility = "hidden");
+    hiddenEls.forEach((el) => (el.style.visibility = "hidden"));
 
     try {
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: "#fff",
-        useCORS: false,
         ignoreElements: (el) => el.classList?.contains("exclude-from-snapshot"),
       });
-
       canvas.toBlob((blob) => {
-        if (!blob) return alert("Snapshot failed.");
+        if (!blob) return alert("Snapshot failed");
         const file = new File([blob], "perception.png", { type: "image/png" });
-
         if (navigator.canShare?.({ files: [file] })) {
-          navigator.share({
-            files: [file],
-            title: "Perception",
-            text: "Check out this perception!",
-          });
+          navigator.share({ files: [file], title: "Perception" });
         } else {
           const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = "perception.png";
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+          const a = document.createElement("a");
+          a.href = url; a.download = "perception.png";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
           URL.revokeObjectURL(url);
         }
-      }, "image/png");
+      });
     } catch (err) {
-      alert("Error capturing snapshot.");
       console.error("Snapshot error:", err);
+      alert("Snapshot failed");
     } finally {
-      if (menu) menu.style.visibility = "visible";
-      excludedImages.forEach((img) => (img.style.visibility = "visible"));
+      menuEl && (menuEl.style.visibility = "visible");
+      hiddenEls.forEach((el) => (el.style.visibility = "visible"));
     }
   };
-
-  useEffect(() => {
-    const handleEsc = (e) => {
-      if (e.key === "Escape") setShowImagePreview(false);
-    };
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, []);
-
-
 
   return (
     <>
       <div
-        className="bg-white shadow-xl rounded-lg flex flex-col relative" ref={cardRef}
+        ref={cardRef}
+        className="bg-white shadow-xl rounded-lg flex flex-col relative"
         onDoubleClick={() => router.push(`/perceptions/${id}`)}
       >
         {/* Header */}
@@ -135,7 +103,7 @@ export default function PerceptionCard({
           <img
             src={user.avatar_url || "/default-avatar.png"}
             alt={user.name}
-            className="h-8 w-8 rounded-full object-cover mr-3"
+            className="h-8 w-8 rounded-full mr-3 object-cover"
           />
           <div className="flex-1">
             <Link href={`/users/${user.id}`} className="font-medium hover:underline">
@@ -143,59 +111,57 @@ export default function PerceptionCard({
             </Link>
             <p className="text-xs text-gray-500">in {topic.name}</p>
           </div>
-          <span className="text-xs text-gray-400 mr-2">{formatRelativeTime(created_at)}</span>
+          <span className="text-xs text-gray-400 mr-2">
+            {formatRelativeTime(created_at)}
+          </span>
 
           {showMenu && (
             <div className="relative" ref={menuRef}>
               <button
-                onClick={() => setMenuOpen((v) => !v)}
+                onClick={() => setMenuOpen((o) => !o)}
                 className="p-1 hover:bg-gray-200 rounded-full"
                 title="Actions"
               >
                 <span className="text-lg font-bold text-gray-600">⋮</span>
               </button>
-
               {menuOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-md z-50 perception-menu">
+                <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow perception-menu z-50">
                   <button
                     onClick={() => {
                       setMenuOpen(false);
                       handleShare();
                     }}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
                   >
                     Share Snapshot
                   </button>
                   <button
                     onClick={() => {
                       setMenuOpen(false);
-                      const url = `${window.location.origin}/perceptions/${id}`;
-                      navigator.clipboard.writeText(url).then(() => {
-                        alert("Link copied to clipboard!");
-                      });
+                      navigator.clipboard.writeText(window.location.href);
+                      alert("Link copied");
                     }}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
                   >
                     Copy Link
                   </button>
-
                   {isOwner && showOwnerActions && (
                     <>
                       <button
                         onClick={() => {
                           setMenuOpen(false);
-                          onEdit?.(perception);
+                          onEdit?.(id);
                         }}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => {
                           setMenuOpen(false);
-                          onDelete?.(perception);
+                          onDelete?.(id);
                         }}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600"
                       >
                         Delete
                       </button>
@@ -218,7 +184,11 @@ export default function PerceptionCard({
             {isVideo ? (
               <video src={media} controls className="w-full max-h-80 object-contain" />
             ) : (
-              <img src={media} alt="media" className="w-full max-h-80 object-contain exclude-from-snapshot" onClick={() => setShowImagePreview(true)}
+              <img
+                src={media}
+                alt=""
+                className="w-full max-h-80 object-contain exclude-from-snapshot cursor-pointer"
+                onClick={() => setShowImagePreview(true)}
               />
             )}
           </div>
@@ -226,21 +196,16 @@ export default function PerceptionCard({
 
         {/* Footer */}
         <div className="mt-auto px-4 py-2 flex items-center space-x-6 text-gray-600 border-t border-gray-100">
-          <button
-            onClick={() => onLike?.(id)}
-            className="flex items-center space-x-1 hover:text-red-500"
-          >
+          <button onClick={() => onLike?.(id)} className="flex items-center space-x-1 hover:text-red-500">
             <HeartIcon className="h-5 w-5" />
             <span className="text-sm">{likes}</span>
           </button>
-
           <button
             onClick={() => {
               if (!detailView) {
                 router.push(`/perceptions/${id}`);
               }
-            }}
-            className={`flex items-center space-x-1 hover:text-blue-500 ${detailView ? "opacity-50 cursor-not-allowed" : ""
+            }} className={`flex items-center space-x-1 hover:text-blue-500 ${detailView ? "opacity-50 cursor-not-allowed" : ""
               }`}
             disabled={detailView}
           >
@@ -249,26 +214,23 @@ export default function PerceptionCard({
           </button>
         </div>
       </div>
+
+      {/* Image preview modal */}
       {showImagePreview &&
         createPortal(
           <div
-            className="fixed inset-0 bg-black bg-opacity-80 z-[1000] flex items-center justify-center p-4 sm:p-8"
+            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
             onClick={() => setShowImagePreview(false)}
           >
-            <div
+            <img
+              src={media}
+              alt=""
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}
-              className="max-w-screen max-h-screen overflow-hidden rounded-lg"
-            >
-              <img
-                src={media}
-                alt="Zoomed"
-                className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl transition-opacity duration-200 ease-in-out"
-              />
-            </div>
+            />
           </div>,
           document.body
         )}
-
     </>
   );
 }

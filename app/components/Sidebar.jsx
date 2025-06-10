@@ -2,29 +2,11 @@
 
 import { PlusIcon, BellIcon, HomeIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import useCurrentUser from "../hooks/useCurrentUser";
 
 export default function Sidebar({ onNewClick = () => { } }) {
-  const [user, setUser] = useState(null);
+  const { user, loading } = useCurrentUser();
   const router = useRouter();
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    fetch("/api/user", {
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Not authenticated");
-        return res.json();
-      })
-      .then(setUser)
-      .catch(() => setUser(null));
-  }, []);
 
   const go = (path) => router.push(path);
 
@@ -62,7 +44,9 @@ export default function Sidebar({ onNewClick = () => { } }) {
         aria-label="Profile"
         className="hover:ring-2 ring-indigo-300 p-1 rounded-full transition"
       >
-        {user?.avatar_url ? (
+        {loading ? (
+          <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
+        ) : user?.avatar_url ? (
           <img
             src={user.avatar_url}
             alt={user.name}
