@@ -208,13 +208,19 @@ export default function ProfileSection({ user: initialUser }) {
                             href={`/users/${user.id}/followers`}
                             className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm"
                         >
-                            {user.follower_count} Followers
+                            {user.followers_count} Followers
                         </Link>
                         <Link
                             href={`/users/${user.id}/following`}
                             className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm"
                         >
                             {user.following_count} Following
+                        </Link>
+                        <Link
+                            href={`/topics`}
+                            className="px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-sm"
+                        >
+                            {user.topics_count}Topics
                         </Link>
                     </div>
                 </div>
