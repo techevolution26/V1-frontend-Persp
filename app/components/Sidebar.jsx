@@ -4,7 +4,7 @@ import { PlusIcon, BellIcon, HomeIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import useCurrentUser from "../hooks/useCurrentUser";
 
-export default function Sidebar({ onNewClick = () => { } }) {
+export default function Sidebar({ onNewClick = () => { }, onBellClick = () => { } }) {
   const { user, loading } = useCurrentUser();
   const router = useRouter();
 
@@ -22,11 +22,14 @@ export default function Sidebar({ onNewClick = () => { } }) {
       </button>
 
       <button
+        onClick={onBellClick}
         title="Notifications"
         aria-label="Notifications"
-        className="hover:bg-gray-100 p-2 rounded-full transition"
+        className="relative hover:bg-gray-100 p-2 rounded-full transition"
       >
         <BellIcon className="h-6 w-6 text-gray-600" />
+        {/* Optional unread badge */}
+        {/* <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full" /> */}
       </button>
 
       <button

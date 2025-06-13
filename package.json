@@ -13,7 +13,9 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^12.16.0",
     "html2canvas-pro": "^1.5.11",
+    "laravel-echo": "^2.1.5",
     "next": "15.3.2",
+    "pusher-js": "^8.4.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-use": "^17.6.0"

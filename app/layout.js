@@ -11,8 +11,10 @@ import LoginModal from "./components/LoginModal";
 import RegisterModal from "./components/RegisterModal";
 import { AnimatePresence } from "framer-motion";
 import useTopics from "./hooks/useTopics";
+import NotificationsPanel from "./components/NotificationsPanel";
 
 export default function RootLayout({ children }) {
+  const [showNotifications, setShowNotifications] = useState(false);
   const pathname = usePathname();
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -48,7 +50,10 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="min-h-screen flex flex-col bg-white">
         <aside className="w-16 fixed left-0 top-0 h-full bg-white border-r flex flex-col items-center py-4 space-y-6 z-50">
-          <Sidebar onNewClick={() => setShowForm(true)} />
+          <Sidebar
+            onNewClick={() => setShowForm(true)}
+            onBellClick={() => setShowNotifications((v) => !v)}
+          />
         </aside>
 
         <div className="pl-16 flex flex-col min-h-screen w-full">
@@ -90,6 +95,11 @@ export default function RootLayout({ children }) {
 
         {pathname === "/login" && <LoginModal />}
         {pathname === "/register" && <RegisterModal />}
+        {showNotifications && (
+          <div className="fixed top-16 right-4 w-96 bg-white rounded shadow-lg p-4 z-50">
+            <NotificationsPanel />
+          </div>
+        )}
       </body>
     </html>
   );
