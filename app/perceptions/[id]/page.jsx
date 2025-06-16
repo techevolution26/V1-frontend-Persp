@@ -76,6 +76,14 @@ export default function PerceptionDetailPage() {
 
   return (
     <main className="p-6 max-w-3xl mx-auto space-y-8">
+      {!isOwner && (
+  <button
+    onClick={() => router.push(`/messages/${perception.user.id}`)}
+    className="mt-2 text-sm text-green-600 hover:underline"
+  >
+    📩 Message {perception.user.name}
+  </button>
+)}
       <PerceptionCard
         perception={perception}
         onLike={() =>

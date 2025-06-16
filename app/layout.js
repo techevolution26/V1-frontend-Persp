@@ -12,8 +12,10 @@ import RegisterModal from "./components/RegisterModal";
 import { AnimatePresence } from "framer-motion";
 import useTopics from "./hooks/useTopics";
 import NotificationsPanel from "./components/NotificationsPanel";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export default function RootLayout({ children }) {
+  const [queryClient] = useState(() => new QueryClient());
   const [showNotifications, setShowNotifications] = useState(false);
   const pathname = usePathname();
   const token =
@@ -49,57 +51,59 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col bg-white">
-        <aside className="w-16 fixed left-0 top-0 h-full bg-white border-r flex flex-col items-center py-4 space-y-6 z-50">
-          <Sidebar
-            onNewClick={() => setShowForm(true)}
-            onBellClick={() => setShowNotifications((v) => !v)}
-          />
-        </aside>
+        <QueryClientProvider client={queryClient}>
+          <aside className="w-16 fixed left-0 top-0 h-full bg-white border-r flex flex-col items-center py-4 space-y-6 z-50">
+            <Sidebar
+              onNewClick={() => setShowForm(true)}
+              onBellClick={() => setShowNotifications((v) => !v)}
+            />
+          </aside>
 
-        <div className="pl-16 flex flex-col min-h-screen w-full">
-          <header className="px-6 py-4 border-b bg-white z-30 sticky top-0">
-            <Header />
-          </header>
+          <div className="pl-16 flex flex-col min-h-screen w-full">
+            <header className="px-6 py-4 border-b bg-white z-30 sticky top-0">
+              <Header />
+            </header>
 
-          <TopicsCarousel topics={topics} visible={showTopics && !loading} />
+            <TopicsCarousel topics={topics} visible={showTopics && !loading} />
 
-          <main className="flex-grow">{children}</main>
-        </div>
+            <main className="flex-grow">{children}</main>
+          </div>
 
-        <AnimatePresence>
-          {showForm && (
-            <div
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-              onClick={() => setShowForm(false)}
-            >
+          <AnimatePresence>
+            {showForm && (
               <div
-                className="bg-white rounded-lg p-6 w-full max-w-lg"
-                onClick={(e) => e.stopPropagation()}
+                className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+                onClick={() => setShowForm(false)}
               >
-                <button
-                  className="float-right text-gray-500"
-                  onClick={() => setShowForm(false)}
+                <div
+                  className="bg-white rounded-lg p-6 w-full max-w-lg"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  ✕
-                </button>
-                <h2 className="text-xl font-bold mb-4">New Perception</h2>
-                <NewPerceptionForm
-                  topics={topics}
-                  onSuccess={() => setShowForm(false)}
-                  token={token}
-                />
+                  <button
+                    className="float-right text-gray-500"
+                    onClick={() => setShowForm(false)}
+                  >
+                    ✕
+                  </button>
+                  <h2 className="text-xl font-bold mb-4">New Perception</h2>
+                  <NewPerceptionForm
+                    topics={topics}
+                    onSuccess={() => setShowForm(false)}
+                    token={token}
+                  />
+                </div>
               </div>
+            )}
+          </AnimatePresence>
+
+          {pathname === "/login" && <LoginModal />}
+          {pathname === "/register" && <RegisterModal />}
+          {showNotifications && (
+            <div className="fixed top-16 right-4 w-96 bg-white rounded shadow-lg p-4 z-50">
+              <NotificationsPanel />
             </div>
           )}
-        </AnimatePresence>
-
-        {pathname === "/login" && <LoginModal />}
-        {pathname === "/register" && <RegisterModal />}
-        {showNotifications && (
-          <div className="fixed top-16 right-4 w-96 bg-white rounded shadow-lg p-4 z-50">
-            <NotificationsPanel />
-          </div>
-        )}
+        </QueryClientProvider>
       </body>
     </html>
   );

@@ -2,7 +2,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { PencilIcon, XMarkIcon, CheckIcon, CalendarIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, XMarkIcon, CheckIcon, CalendarIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
 import useCurrentUser from "../hooks/useCurrentUser";
 import FollowButton from "./FollowButton";
 import Link from "next/link";
@@ -169,6 +169,15 @@ export default function ProfileSection({ user: initialUser }) {
                             <div className="flex items-center gap-2 flex-wrap">
                                 <h1 className="text-2xl font-bold text-gray-800">{user.name}</h1>
                                 {!isOwnProfile && <FollowButton profileUserId={user.id} />}
+                                {!isOwnProfile && (
+                                    <button
+                                        onClick={() => router.push(`/messages/${initialUser.id}`)}
+                                        className="ml-2 flex items-center gap-1 px-3 py-1.5 bg-green-50 text-green-700 rounded-full hover:bg-green-100"
+                                    >
+                                        <ChatBubbleLeftIcon className="h-4 w-4" />
+                                        Message
+                                    </button>
+                                )}
                             </div>
                             {user.profession && (
                                 <p className="text-indigo-600 italic">{user.profession}</p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { PlusIcon, BellIcon, HomeIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, BellIcon, HomeIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import useCurrentUser from "../hooks/useCurrentUser";
 
@@ -30,6 +30,14 @@ export default function Sidebar({ onNewClick = () => { }, onBellClick = () => { 
         <BellIcon className="h-6 w-6 text-gray-600" />
         {/* Optional unread badge */}
         {/* <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full" /> */}
+      </button>
+
+      <button
+        onClick={() => go("/messages")}
+        title="Messages"
+        className="hover:bg-gray-100 p-2 rounded-full transition"
+      >
+        <ChatBubbleLeftRightIcon className="h-6 w-6 text-gray-600" />
       </button>
 
       <button
