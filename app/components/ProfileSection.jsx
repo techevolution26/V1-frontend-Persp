@@ -6,11 +6,13 @@ import { PencilIcon, XMarkIcon, CheckIcon, CalendarIcon, ChatBubbleLeftIcon } fr
 import useCurrentUser from "../hooks/useCurrentUser";
 import FollowButton from "./FollowButton";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function ProfileSection({ user: initialUser }) {
     const inputFile = useRef();
     const { user: me, loading: meLoading } = useCurrentUser();
     const isOwnProfile = me?.id === initialUser.id;
+    const router = useRouter();
 
     // Local editable copy of the profile
     const [user, setUser] = useState(initialUser);
@@ -171,7 +173,7 @@ export default function ProfileSection({ user: initialUser }) {
                                 {!isOwnProfile && <FollowButton profileUserId={user.id} />}
                                 {!isOwnProfile && (
                                     <button
-                                        onClick={() => router.push(`/messages/${initialUser.id}`)}
+                                        onClick={() => router.push(`/messages?peer=${user.id}`)}
                                         className="ml-2 flex items-center gap-1 px-3 py-1.5 bg-green-50 text-green-700 rounded-full hover:bg-green-100"
                                     >
                                         <ChatBubbleLeftIcon className="h-4 w-4" />

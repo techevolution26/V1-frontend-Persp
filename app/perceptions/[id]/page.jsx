@@ -6,6 +6,7 @@ import NewCommentForm from "../../components/NewCommentForm";
 import CommentsList from "../../components/CommentsList";
 import { usePerceptionDetail } from "../../hooks/usePerceptionDetail";
 import useLikeToggle from "../../hooks/useLikeToggle";
+import { useRouter } from "next/navigation";
 
 function Skeleton() {
   return (
@@ -30,6 +31,7 @@ export default function PerceptionDetailPage() {
     setComments,
   } = usePerceptionDetail(id);
   const toggleLike = useLikeToggle();
+  const router= useRouter();
 
   const isOwner = me?.id === perception?.user?.id;
   const hasCommented = comments.some((c) => c.user.id === me?.id);
@@ -78,7 +80,7 @@ export default function PerceptionDetailPage() {
     <main className="p-6 max-w-3xl mx-auto space-y-8">
       {!isOwner && (
   <button
-    onClick={() => router.push(`/messages/${perception.user.id}`)}
+    onClick={() => router.push(`/messages?peer=${perception.user.id}`)}
     className="mt-2 text-sm text-green-600 hover:underline"
   >
     📩 Message {perception.user.name}

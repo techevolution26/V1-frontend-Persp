@@ -26,30 +26,36 @@ export default function TopicsCarousel({ topics = [], visible = true, onSelect }
                 topics.map((topic) => (
                   <div
                     key={topic.id}
-                    className="relative flex-shrink-0 w-28 h-28 rounded-full shadow-md hover:shadow-xl transition duration-300 ease-in-out bg-gray-200 group"
+                    className="relative flex-shrink-0 flex flex-col items-center w-28"
                   >
-                    {topic.image_url ? (
-                      <img
-                        src={topic.image_url}
-                        alt={topic.name}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center w-full h-full text-sm text-gray-700 font-medium">
-                        {topic.name}
-                      </div>
-                    )}
+                    {/* Topic name above the circle */}
+                    <span className="mb-2 text-sm font-semibold text-gray-800 text-center">
+                      {topic.name}
+                    </span>
+                    <div className="relative w-28 h-28 rounded-full shadow-md hover:shadow-xl transition duration-300 ease-in-out bg-gray-200 group">
+                      {topic.image_url ? (
+                        <img
+                          src={topic.image_url}
+                          alt={topic.name}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center w-full h-full text-sm text-gray-700 font-medium">
+                          {topic.name}
+                        </div>
+                      )}
 
-                    <button
-                      onClick={() => {
-                        onSelect?.(topic);
-                        router.push(`/topics/${topic.id}`);
-                      }}
-                      title={topic.description}
-                      className="absolute inset-0 rounded-full z-10 bg-black/0 hover:bg-white/40 transition text-xs text-center flex items-end justify-center pb-2 font-semibold text-gray-800"
-                    >
-                      {/* {topic.name} */}
-                    </button>
+                      <button
+                        onClick={() => {
+                          onSelect?.(topic);
+                          router.push(`/topics/${topic.id}`);
+                        }}
+                        title={topic.description}
+                        className="absolute inset-0 rounded-full z-10 bg-black/0 hover:bg-white/40 transition text-xs text-center flex items-end justify-center pb-2 font-semibold text-gray-800"
+                      >
+                        {/* Remove topic.name here to avoid duplicate */}
+                      </button>
+                    </div>
                   </div>
                 ))
               )}

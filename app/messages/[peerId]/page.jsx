@@ -3,11 +3,11 @@
 
 import { useParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMessages } from "@/hooks/useMessages";
-import { useMessageStream } from "@/hooks/useMessageStream";
-import useCurrentUser from "@/hooks/useCurrentUser";
-import ChatWindow from "@/components/ChatWindow";
-import MessageInput from "@/components/MessageInput";
+import { useMessages } from "../../hooks/useMessages";
+import { useMessageStream } from "../../hooks/useMessageStream";
+import useCurrentUser from "../../hooks/useCurrentUser";
+import ChatWindow from "../../components/ChatWindow";
+import MessageInput from "../../components/MessageInput";
 
 export default function ChatPage() {
   const { peerId } = useParams();               // “123”
