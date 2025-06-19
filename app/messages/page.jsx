@@ -13,14 +13,12 @@ import MessageInput from "../components/MessageInput";
 
 import { Suspense } from "react";
 
-function MessagesHubContent() {
+function MessagesHubContent({ peerId }) {
   const { user: me, loading: meLoading } = useCurrentUser();
   const token = typeof window !== "undefined" && localStorage.getItem("token");
   const convosQuery = useConversations(token);
 
   const router = useRouter();
-  const params = useSearchParams();
-  const peerId = Number(params.get("peer")) || null;
 
   const messagesQuery = useMessages(peerId, token);
   const queryClient = useQueryClient();
@@ -84,10 +82,18 @@ function MessagesHubContent() {
   );
 }
 
+function PeerIdProvider({ children }) {
+  const params = useSearchParams();
+  const peerId = Number(params.get("peer")) || null;
+  return children(peerId);
+}
+
 export default function MessagesHub() {
   return (
     <Suspense fallback={<p>Loading messages…</p>}>
-      <MessagesHubContent />
+      <PeerIdProvider>
+        {(peerId) => <MessagesHubContent peerId={peerId} />}
+      </PeerIdProvider>
     </Suspense>
   );
 }
