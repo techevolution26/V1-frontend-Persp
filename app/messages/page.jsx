@@ -11,7 +11,9 @@ import ConversationSidebar from "../components/ConversationSidebar";
 import ChatWindow from "../components/ChatWindow";
 import MessageInput from "../components/MessageInput";
 
-export default function MessagesHub() {
+import { Suspense } from "react";
+
+function MessagesHubContent() {
   const { user: me, loading: meLoading } = useCurrentUser();
   const token = typeof window !== "undefined" && localStorage.getItem("token");
   const convosQuery = useConversations(token);
@@ -79,5 +81,13 @@ export default function MessagesHub() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MessagesHub() {
+  return (
+    <Suspense fallback={<p>Loading messages…</p>}>
+      <MessagesHubContent />
+    </Suspense>
   );
 }
