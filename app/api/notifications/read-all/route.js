@@ -2,7 +2,7 @@
 
 export async function POST(request) {
   const token = request.headers.get("authorization") || "";
-  const res = await fetch("http://localhost:8000/api/notifications/read-all", {
+  const res = await fetch(`${process.env.API_URL || "http://localhost:8000"}/api/notifications/read-all`, {
     method: "POST",
     headers: { Authorization: token, Accept: "application/json" },
   });

@@ -3,7 +3,7 @@ export async function GET(request, { params }) {
   const { id } = await params;
   // no auth needed to view what topics a user follows,
   const token = request.headers.get("authorization") || "";
-  const res = await fetch(`http://localhost:8000/api/users/${id}/topics`, {
+  const res = await fetch(`${process.env.API_URL || "http://localhost:8000"}/api/users/${id}/topics`, {
     headers: { Accept: "application/json", Authorization: token },
   });
   const data = await res.json();

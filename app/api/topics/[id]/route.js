@@ -5,7 +5,7 @@ export async function GET(request, { params }) {
   const {id} = await params;
 
   // Forward to your my backend:
-  const res = await fetch(`http://localhost:8000/api/topics/${id}`, {
+  const res = await fetch(`${process.env.API_URL || "http://localhost:8000"}/api/topics/${id}`, {
     headers: { Accept: "application/json", Authorization: token },
   });
 

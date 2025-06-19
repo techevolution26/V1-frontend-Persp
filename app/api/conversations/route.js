@@ -1,11 +1,11 @@
 // app/api/conversations/route.js
 import { NextResponse } from "next/server";
 
-const BACKEND = process.env.BACKEND_URL || "http://localhost:8000";
+const API_BASE = process.env.API_URL || "http://localhost:8000";
 
 export async function GET(request) {
   const token = request.headers.get("authorization") || "";
-  const res = await fetch(`${BACKEND}/api/conversations`, {
+  const res = await fetch(`${API_BASE}/api/conversations`, {
     headers: { Authorization: token, Accept: "application/json" },
   });
   const data = await res.json();
@@ -17,7 +17,7 @@ export async function POST(request) {
   // if you meant to start DM with a user:
   const token = request.headers.get("authorization") || "";
   const body = await request.json();
-  const res = await fetch(`${BACKEND}/api/conversations`, {
+  const res = await fetch(`${API_BASE}/api/conversations`, {
     method: "POST",
     headers: {
       Authorization: token,

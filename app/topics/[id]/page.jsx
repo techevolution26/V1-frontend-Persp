@@ -6,7 +6,7 @@ import PerceptionsList from "../../components/PerceptionList";
 export default async function TopicPage({ params }) {
   const { id } = await params;
 
-  const topicRes = await fetch(`http://localhost:8000/api/topics/${id}`, {
+  const topicRes = await fetch(`${process.env.API_URL || "http://localhost:8000"}/api/topics/${id}`, {
     headers: { Accept: "application/json" },
     // Optionally: cache: "no-store" for real-time
   });

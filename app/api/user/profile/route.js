@@ -1,6 +1,6 @@
 export async function POST(request) {
   const form = await request.formData();
-  const res = await fetch("http://localhost:8000/api/user/profile", {
+  const res = await fetch(`${process.env.API_URL || "http://localhost:8000"}/api/user/profile`, {
     method: "POST",
     headers: {
       Authorization: request.headers.get("authorization") || "",

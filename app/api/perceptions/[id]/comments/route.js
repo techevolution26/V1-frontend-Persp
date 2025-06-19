@@ -7,7 +7,7 @@ export async function GET(request, { params }) {
   // Fetching raw comments (backend) returning them with nested `replies`)
 
   const res = await fetch(
-    `http://localhost:8000/api/perceptions/${id}/comments`,
+    `${process.env.API_URL || "http://localhost:8000"}/api/perceptions/${id}/comments`,
     {
       headers: {
         Accept: "application/json",
@@ -45,7 +45,7 @@ export async function POST(request, { params }) {
   const form = await request.formData();
 
   const res = await fetch(
-    `http://localhost:8000/api/perceptions/${id}/comments`,
+    `${process.env.API_URL || "http://localhost:8000"}/api/perceptions/${id}/comments`,
     {
       method: "POST",
       headers: { Authorization: token },

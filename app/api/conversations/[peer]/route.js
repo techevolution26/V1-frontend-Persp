@@ -1,12 +1,12 @@
 // app/api/conversations/[peer]/route.js
 import { NextResponse } from "next/server";
 
-const BACKEND = process.env.BACKEND_URL || "http://localhost:8000";
+const API_BASE = process.env.API_URL || "http://localhost:8000";
 
 export async function GET(request, { params }) {
   const { peer } = await params;
   const token = request.headers.get("authorization") || "";
-  const url = new URL(`${BACKEND}/api/conversations/${peer}`);
+  const url = new URL(`${API_BASE}/api/conversations/${peer}`);
   url.search = request.nextUrl.search; // preserve ?page=
   const res = await fetch(url.toString(), {
     headers: { Authorization: token, Accept: "application/json" },
@@ -19,7 +19,7 @@ export async function POST(request, { params }) {
   const { peer } = await params;
   const token = request.headers.get("authorization") || "";
   const body = await request.json();
-  const res = await fetch(`${BACKEND}/api/conversations/${peer}`, {
+  const res = await fetch(`${API_BASE}/api/conversations/${peer}`, {
     method: "POST",
     headers: {
       Authorization: token,
@@ -36,7 +36,7 @@ export async function POST(request, { params }) {
 //   const { peer } = params;
 //   const token = request.headers.get("authorization") || "";
 //   const body = await request.json();
-//   const res = await fetch(`http://localhost:8000/api/conversations/${peer}`, {
+//   const res = await fetch(`${process.env.API_URL || "http://localhost:8000"}/api/conversations/${peer}`, {
 //     method: "POST",
 //     headers: {
 //       Authorization: token,

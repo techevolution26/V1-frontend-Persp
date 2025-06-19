@@ -5,7 +5,7 @@ export async function GET(request) {
 
   const incoming = new URL(request.url);
   const qs = incoming.searchParams.toString();
-  const endpoint = `http://localhost:8000/api/perceptions${qs ? `?${qs}` : ""}`;
+  const endpoint = `${process.env.API_URL || "http://localhost:8000"}/api/perceptions${qs ? `?${qs}` : ""}`;
 
   const res = await fetch(endpoint, {
     headers: {
@@ -34,7 +34,7 @@ export async function POST(request) {
   const token = request.headers.get("authorization") || "";
   const form = await request.formData();
 
-  const res = await fetch("http://localhost:8000/api/perceptions", {
+  const res = await fetch(`${process.env.API_URL || "http://localhost:8000"}/api/perceptions`, {
     method: "POST",
     headers: { Authorization: token },
     body: form,

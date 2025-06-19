@@ -2,7 +2,7 @@
 
 export async function GET(request, { params }) {
   const { id } = await params;
-  const res = await fetch(`http://localhost:8000/api/users/${id}/perceptions`, {
+  const res = await fetch(`${process.env.API_URL || "http://localhost:8000"}/api/users/${id}/perceptions`, {
     headers: { Accept: "application/json" },
   });
   const data = await res.json();

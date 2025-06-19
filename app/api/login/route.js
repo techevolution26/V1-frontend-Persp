@@ -1,7 +1,7 @@
 export async function POST(req) {
   const body = await req.json();
 
-  const res = await fetch('http://localhost:8000/api/login', {
+  const res = await fetch(`${process.env.API_URL || "http://localhost:8000"}/api/login`, {
     method: 'POST',
     headers: {
       'Accept':       'application/json',

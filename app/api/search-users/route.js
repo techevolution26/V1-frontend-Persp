@@ -1,7 +1,7 @@
 // app/api/search-users/route.js
 import { NextResponse } from "next/server";
 
-const BACKEND = process.env.BACKEND_URL || "http://localhost:8000";
+const BACKEND = process.env.BACKEND_URL || process.env.API_URL || "http://localhost:8000";
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
