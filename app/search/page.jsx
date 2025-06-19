@@ -1,6 +1,7 @@
 // app/search/page.jsx
 
 "use client";
+export const dynamic = "force-dynamic";
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
