@@ -1,7 +1,7 @@
 // app/api/user/route.js
 export async function GET(request) {
   const token = request.headers.get("authorization") || "";
-  const res = await fetch(`${(process.env.API_URL || "http://localhost:8000")}/api/user`, {
+  const res = await fetch(`${process.env.API_URL}/api/user`, {
     headers: {
       Accept: "application/json",
       Authorization: token,

@@ -6,7 +6,7 @@ export async function GET(request) {
 
   // Forwarding to Laravel backend
   const res = await fetch(
-    `${process.env.API_URL || "http://localhost:8000"}/api/search?query=${encodeURIComponent(query)}`,
+    `${process.env.API_URL}/api/search?query=${encodeURIComponent(query)}`,
     {
       headers: {
         Accept: "application/json",

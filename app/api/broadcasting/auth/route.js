@@ -1,7 +1,7 @@
 // // app/api/broadcasting/auth/route.js
 // import { NextResponse } from "next/server";
 
-// const BACKEND = process.env.BACKEND_URL || `${process.env.API_URL || "http://localhost:8000"}"`;
+// const BACKEND = process.env.BACKEND_URL || `${process.env.API_URL}`;
 
 // export async function POST(request) {
 //   try {

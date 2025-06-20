@@ -1,15 +1,14 @@
 // app/api/search-users/route.js
 import { NextResponse } from "next/server";
 
-const BACKEND = process.env.BACKEND_URL || process.env.API_URL || "http://localhost:8000";
+// const BACKEND = process.env.API_URL;
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q") || "";
   if (!q) return NextResponse.json([], { status: 200 });
 
-  const res = await fetch(
-    `${BACKEND}/api/search-users?query=${encodeURIComponent(q)}`,
+  const res = await fetch(`${process.env.API_URL}/api/search-users?query=${encodeURIComponent(q)}`,
     { headers: { Accept: "application/json" } }
   );
   const data = await res.json();

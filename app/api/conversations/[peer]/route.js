@@ -1,7 +1,7 @@
 // app/api/conversations/[peer]/route.js
 import { NextResponse } from "next/server";
 
-const API_BASE = process.env.API_URL || "http://localhost:8000";
+const API_BASE = process.env.API_URL;
 
 export async function GET(request, { params }) {
   const { peer } = await params;
@@ -36,7 +36,7 @@ export async function POST(request, { params }) {
 //   const { peer } = params;
 //   const token = request.headers.get("authorization") || "";
 //   const body = await request.json();
-//   const res = await fetch(`${process.env.API_URL || "http://localhost:8000"}/api/conversations/${peer}`, {
+//   const res = await fetch(`${process.env.API_URL}/api/conversations/${peer}`, {
 //     method: "POST",
 //     headers: {
 //       Authorization: token,
