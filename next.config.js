@@ -12,6 +12,11 @@ const nextConfig = {
         source: "/storage/:path*",
         destination: `${process.env.API_URL}/storage/:path*`,
       },
+
+       {
+        source: "/api/:path*",
+        destination: `${process.env.API_URL}/api/:path*`,
+      },
     ];
   },
 };
