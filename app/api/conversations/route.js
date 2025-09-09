@@ -1,7 +1,7 @@
 // app/api/conversations/route.js
 import { NextResponse } from "next/server";
 
-const API_BASE = process.env.API_URL;
+const API_BASE= process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export async function GET(request) {
   const token = request.headers.get("authorization") || "";

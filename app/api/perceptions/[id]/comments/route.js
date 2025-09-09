@@ -3,18 +3,16 @@
 export async function GET(request, { params }) {
   const { id } = await params;
   const token = request.headers.get("authorization") || "";
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   // Fetching raw comments (backend) returning them with nested `replies`)
 
-  const res = await fetch(
-    `${process.env.API_URL}/api/perceptions/${id}/comments`,
-    {
-      headers: {
-        Accept: "application/json",
-        Authorization: token,
-      },
-    }
-  );
+  const res = await fetch(`${API_BASE}/api/perceptions/${id}/comments`, {
+    headers: {
+      Accept: "application/json",
+      Authorization: token,
+    },
+  });
   const rawText = await res.text();
   let comments;
   try {
@@ -44,14 +42,11 @@ export async function POST(request, { params }) {
   const token = request.headers.get("authorization") || "";
   const form = await request.formData();
 
-  const res = await fetch(
-    `${process.env.API_URL}/api/perceptions/${id}/comments`,
-    {
-      method: "POST",
-      headers: { Authorization: token },
-      body: form,
-    }
-  );
+  const res = await fetch(`${API_BASE}/api/perceptions/${id}/comments`, {
+    method: "POST",
+    headers: { Authorization: token },
+    body: form,
+  });
 
   const text = await res.text();
   return new Response(text, {

@@ -3,10 +3,11 @@
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("query") || "";
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-  // Forwarding to Laravel backend
+  // Forwarding my Laravel backend
   const res = await fetch(
-    `${process.env.API_URL}/api/search?query=${encodeURIComponent(query)}`,
+    `${API_BASE}/api/search?query=${encodeURIComponent(query)}`,
     {
       headers: {
         Accept: "application/json",

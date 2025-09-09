@@ -5,7 +5,7 @@ const path = require('path');
 
 const BASE_DIR = './';
 const targetURL = 'http://localhost:8000';
-const replacement = '${process.env.API_URL || "http://localhost:8000"}';
+const replacement = '${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}';
 
 function walk(dir, callback) {
   fs.readdirSync(dir).forEach(file => {
@@ -29,8 +29,8 @@ function replaceInFile(filePath, dryRun = true) {
   }
 }
 
-// Run the script
+// Running script
 const dryRun = process.argv.includes('--apply') === false;
 
-console.log(dryRun ? '🔍 Running in DRY-RUN mode...' : '✍️ Applying changes...');
+console.log(dryRun ? '🔍 Running in DRY-RUN mode...' : ' Applying changes...');
 walk(BASE_DIR, (file) => replaceInFile(file, dryRun));

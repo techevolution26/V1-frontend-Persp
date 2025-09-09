@@ -1,7 +1,8 @@
 // app/api/user/route.js
 export async function GET(request) {
   const token = request.headers.get("authorization") || "";
-  const res = await fetch(`${process.env.API_URL}/api/user`, {
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const res = await fetch(`${API_BASE}/api/user`, {
     headers: {
       Accept: "application/json",
       Authorization: token,

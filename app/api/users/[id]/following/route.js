@@ -3,8 +3,9 @@
 export async function GET(request, { params }) {
   const token = request.headers.get("authorization") || "";
   const { id } = await params;
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-  const res = await fetch(`${process.env.API_URL}/api/users/${id}/following`, {
+  const res = await fetch(`${API_BASE}/api/users/${id}/following`, {
     headers: {
       Accept: "application/json",
       Authorization: token,

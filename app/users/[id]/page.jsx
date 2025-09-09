@@ -3,8 +3,10 @@ import RecentPerceptions from "../../components/RecentPerceptions";
 
 export default async function UserProfile({ params }) {
   const { id } = await params;
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-  const res = await fetch(`${process.env.API_URL}/api/users/${id}`, {
+
+  const res = await fetch(`${API_BASE}/api/users/${id}`, {
     headers: { Accept: "application/json" },
   });
 

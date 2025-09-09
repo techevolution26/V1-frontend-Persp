@@ -1,9 +1,10 @@
 export async function POST(req) {
-    // const auth = request.headers.get("authorization") || "";
+  // const auth = request.headers.get("authorization") || "";
 
   const body = await req.json();
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-  const res = await fetch(`${process.env.API_URL}/api/register`, {
+  const res = await fetch(`${API_BASE}/api/register`, {
     method: "POST",
     headers: {
       Accept: "application/json",

@@ -1,10 +1,12 @@
 // app/api/perceptions/[id]/like/route.js
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 export async function POST(request, { params }) {
   const { id } = await params;
   const token = request.headers.get("authorization") || "";
 
-  const res = await fetch(`${process.env.API_URL}/api/perceptions/${id}/like`, {
+  const res = await fetch(`${API_BASE}/api/perceptions/${id}/like`, {
     method: "POST",
     headers: { Authorization: token, Accept: "application/json" },
   });
@@ -19,7 +21,7 @@ export async function DELETE(request, { params }) {
   const { id } = await params;
   const token = request.headers.get("authorization") || "";
 
-  const res = await fetch(`${process.env.API_URL}/api/perceptions/${id}/like`, {
+  const res = await fetch(`${API_BASE}/api/perceptions/${id}/like`, {
     method: "DELETE",
     headers: { Authorization: token, Accept: "application/json" },
   });

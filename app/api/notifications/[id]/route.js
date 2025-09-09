@@ -2,9 +2,10 @@
 export async function DELETE(request, { params }) {
   const token = request.headers.get("authorization") || "";
   const { id } = await params;
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   // forwarding to Laravel
-  const res = await fetch(`${process.env.API_URL}/api/notifications/${id}`, {
+  const res = await fetch(`${API_BASE}/api/notifications/${id}`, {
     method: "DELETE",
     headers: {
       Accept: "application/json",

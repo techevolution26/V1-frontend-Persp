@@ -2,7 +2,8 @@ export async function GET(request) {
   const auth = request.headers.get("authorization") || "";
 
   // const baseUrl = process.env.API_URL ;
-  const res = await fetch(`${process.env.API_URL}/api/topics`, {
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const res = await fetch(`${API_BASE}/api/topics`, {
     headers: {
       Accept: "application/json",
       Authorization: auth,
