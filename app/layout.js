@@ -13,7 +13,7 @@ import { AnimatePresence } from "framer-motion";
 import useTopics from "./hooks/useTopics";
 import NotificationsPanel from "./components/NotificationsPanel";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
+import { Analytics } from "@vercel/analytics/next";
 export default function RootLayout({ children }) {
   const [queryClient] = useState(() => new QueryClient());
   const [showNotifications, setShowNotifications] = useState(false);
@@ -51,6 +51,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col bg-white">
+        <Analytics />
         <QueryClientProvider client={queryClient}>
           <aside className="w-16 fixed left-0 top-0 h-full bg-white border-r flex flex-col items-center py-4 space-y-6 z-50">
             <Sidebar
