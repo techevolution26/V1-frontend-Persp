@@ -1,6 +1,8 @@
 //app/layout.js
 "use client";
+
 import "./globals.css";
+import useKeepAwake from "./hooks/useKeepAwake";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "./components/Sidebar";
@@ -14,7 +16,16 @@ import useTopics from "./hooks/useTopics";
 import NotificationsPanel from "./components/NotificationsPanel";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Analytics } from "@vercel/analytics/next";
+import MobileNav from "./components/MobileNav";
+
+//meta data
+export const meta = {
+  title: "Perception APP",
+  description: "Your Companion to Greater Knowledge & Wisdom.",
+};
 export default function RootLayout({ children }) {
+
+  useKeepAwake({ url: "/api/ping", visibleInterval: 5 * 60_000 });
   const [queryClient] = useState(() => new QueryClient());
   const [showNotifications, setShowNotifications] = useState(false);
   const pathname = usePathname();
@@ -53,31 +64,30 @@ export default function RootLayout({ children }) {
       <body className="min-h-screen flex flex-col bg-white">
         <Analytics />
         <QueryClientProvider client={queryClient}>
-          <aside className="w-16 fixed left-0 top-0 h-full bg-white border-r flex flex-col items-center py-4 space-y-6 z-50">
+          <aside className="hidden md:flex w-16 fixed left-0 top-0 h-full bg-white border-r flex-col items-center py-4 space-y-6 z-50">
             <Sidebar
               onNewClick={() => setShowForm(true)}
               onBellClick={() => setShowNotifications((v) => !v)}
             />
           </aside>
 
-          <div className="pl-16 flex flex-col min-h-screen w-full">
+          <div className="pl-0 md:pl-16 flex flex-col min-h-screen w-full pb-0 md:pb-0 sm:pb-16">
+            {" "}
             <header className="px-6 py-4 border-b bg-white z-30 sticky top-0">
               <Header />
             </header>
-
             <TopicsCarousel topics={topics} visible={showTopics && !loading} />
-
             <main className="flex-grow">{children}</main>
           </div>
 
           <AnimatePresence>
             {showForm && (
               <div
-                className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+                className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50"
                 onClick={() => setShowForm(false)}
               >
                 <div
-                  className="bg-white rounded-lg p-6 w-full max-w-lg"
+                  className="bg-white rounded-t-lg md:rounded-lg p-4 md:p-6 w-full max-w-lg max-h-[90vh] overflow-auto"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
@@ -104,6 +114,11 @@ export default function RootLayout({ children }) {
               <NotificationsPanel />
             </div>
           )}
+          {/* Mobile button nav */}
+          <MobileNav
+            onNewClick={() => setShowForm(true)}
+            onBellClick={() => setShowNotifications((v) => !v)}
+          />
         </QueryClientProvider>
       </body>
     </html>

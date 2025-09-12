@@ -46,8 +46,8 @@ export default function Header() {
   if (!mounted) return null;
 
   return (
-    <header className="flex items-center justify-between px-6 py-3 bg-gradient-to-b from-white to-gray-100 
-                     shadow-[inset_0_-1px_2px_rgba(0,0,0,0.05)] border-b border-gray-200 min-h-[4rem]">
+    <header className="flex items-center justify-between px-4 md:px-6 py-2 md:py-3 bg-gradient-to-b from-white to-gray-100
+                  shadow-[inset_0_-1px_2px_rgba(0,0,0,0.05)] border-b border-gray-200 min-h-[3.5rem]">
       {/* Logo */}
       <div className="flex items-center text-xl font-bold group">
         <div className="px-3 py-1 rounded-full bg-white shadow-inner border border-gray-200 flex items-center">
@@ -58,8 +58,8 @@ export default function Header() {
       </div>
 
       {/* Search */}
-      <div className="ml-6">
-        <form onSubmit={handleSubmit} className="relative w-48">
+      <div className="ml-4 md:ml-6 flex-1 max-w-xl">
+        <form onSubmit={handleSubmit} className="relative w-full max-w-xs md:max-w-none md:w-48">
           <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
             {loading ? (
               <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />

@@ -1,4 +1,3 @@
-// app/components/PerceptionCard.jsx
 "use client";
 
 import { useState, useRef } from "react";
@@ -59,7 +58,7 @@ export default function PerceptionCard({
     if (!cardRef.current) return;
     const menuEl = cardRef.current.querySelector(".perception-menu");
     const hiddenEls = cardRef.current.querySelectorAll(".exclude-from-snapshot");
-    menuEl && (menuEl.style.visibility = "hidden");
+    if (menuEl) menuEl.style.visibility = "hidden";
     hiddenEls.forEach((el) => (el.style.visibility = "hidden"));
 
     try {
@@ -75,7 +74,8 @@ export default function PerceptionCard({
         } else {
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
-          a.href = url; a.download = "perception.png";
+          a.href = url;
+          a.download = "perception.png";
           document.body.appendChild(a);
           a.click();
           a.remove();
@@ -86,7 +86,7 @@ export default function PerceptionCard({
       console.error("Snapshot error:", err);
       alert("Snapshot failed");
     } finally {
-      menuEl && (menuEl.style.visibility = "visible");
+      if (menuEl) menuEl.style.visibility = "visible";
       hiddenEls.forEach((el) => (el.style.visibility = "visible"));
     }
   };
@@ -95,64 +95,91 @@ export default function PerceptionCard({
     <>
       <div
         ref={cardRef}
-        className="bg-white shadow-xl rounded-lg flex flex-col relative"
+        className="bg-white shadow-xl rounded-xl flex flex-col relative overflow-hidden"
         onDoubleClick={() => router.push(`/perceptions/${id}`)}
       >
         {/* Header */}
-        <div className="flex items-center px-4 py-2">
+        <div className="flex items-start gap-3 px-3 py-3 sm:px-4 sm:py-2">
           <img
             src={user.avatar_url || "/default-avatar.png"}
             alt={user.name}
-            className="h-8 w-8 rounded-full mr-3 object-cover"
+            className="flex-shrink-0 h-10 w-10 rounded-full object-cover"
+            loading="lazy"
+            decoding="async"
           />
-          <div className="flex-1">
-            <Link href={`/users/${user.id}`} className="font-medium hover:underline">
-              {user.name}
-            </Link>
-            <p className="text-xs text-gray-500">in {topic.name}</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <Link
+                  href={`/users/${user.id}`}
+                  className="font-medium text-sm sm:text-base block truncate hover:underline"
+                  title={user.name}
+                >
+                  {user.name}
+                </Link>
+                <div className="text-xs text-gray-500 truncate">
+                  <span className="mr-1">in</span>
+                  <span className="font-medium text-gray-600">{topic?.name}</span>
+                </div>
+              </div>
+
+              <div className="text-xs text-gray-400 whitespace-nowrap ml-2">
+                {formatRelativeTime(created_at)}
+              </div>
+            </div>
           </div>
-          <span className="text-xs text-gray-400 mr-2">
-            {formatRelativeTime(created_at)}
-          </span>
 
           {showMenu && (
-            <div className="relative" ref={menuRef}>
+            <div className="relative ml-1" ref={menuRef}>
               <button
                 onClick={() => setMenuOpen((o) => !o)}
-                className="p-1 hover:bg-gray-200 rounded-full"
+                className="p-1.5 hover:bg-gray-100 rounded-full"
+                aria-expanded={menuOpen}
+                aria-haspopup="true"
                 title="Actions"
               >
-                <span className="text-lg font-bold text-gray-600">⋮</span>
+                <span className="text-lg font-bold text-gray-600 select-none">⋮</span>
               </button>
+
               {menuOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow perception-menu z-50">
+                /* Positioning adaptively so it won't overflow on small screens */
+                <div
+                  className="absolute right-0 mt-2 w-44 sm:w-40 bg-white border rounded-lg shadow-lg perception-menu z-50"
+                  role="menu"
+                >
                   <button
                     onClick={() => {
                       setMenuOpen(false);
                       handleShare();
                     }}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
+                    role="menuitem"
                   >
                     Share Snapshot
                   </button>
+
                   <button
                     onClick={() => {
                       setMenuOpen(false);
                       navigator.clipboard.writeText(window.location.href);
                       alert("Link copied");
                     }}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
+                    role="menuitem"
                   >
                     Copy Link
                   </button>
+
                   {isOwner && showOwnerActions && (
                     <>
+                      <hr />
                       <button
                         onClick={() => {
                           setMenuOpen(false);
                           onEdit?.(id);
                         }}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                        className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
+                        role="menuitem"
                       >
                         Edit
                       </button>
@@ -161,7 +188,8 @@ export default function PerceptionCard({
                           setMenuOpen(false);
                           onDelete?.(id);
                         }}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600"
+                        className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm text-red-600"
+                        role="menuitem"
                       >
                         Delete
                       </button>
@@ -174,20 +202,28 @@ export default function PerceptionCard({
         </div>
 
         {/* Body */}
-        <div className="px-4 py-2">
-          <p className="text-gray-800 whitespace-pre-wrap">{body}</p>
+        <div className="px-3 sm:px-4 pb-2">
+          <p className="text-sm sm:text-base text-gray-800 whitespace-pre-wrap break-words">
+            {body}
+          </p>
         </div>
 
         {/* Media */}
         {media && (
-          <div className="w-full">
+          <div className="w-full px-0 sm:px-0 pb-2">
             {isVideo ? (
-              <video src={media} controls className="w-full max-h-80 object-contain" />
+              <video
+                src={media}
+                controls
+                className="w-full max-h-[38vh] sm:max-h-[46vh] object-contain rounded-b-lg"
+              />
             ) : (
               <img
                 src={media}
                 alt=""
-                className="w-full max-h-80 object-contain exclude-from-snapshot cursor-pointer"
+                className="w-full max-h-[48vh] sm:max-h-[60vh] object-cover cursor-pointer"
+                loading="lazy"
+                decoding="async"
                 onClick={() => setShowImagePreview(true)}
               />
             )}
@@ -195,23 +231,29 @@ export default function PerceptionCard({
         )}
 
         {/* Footer */}
-        <div className="mt-auto px-4 py-2 flex items-center space-x-6 text-gray-600 border-t border-gray-100">
-          <button onClick={() => onLike?.(id)} className="flex items-center space-x-1 hover:text-red-500">
-            <HeartIcon className="h-5 w-5" />
+        <div className="mt-auto px-3 sm:px-4 py-2 flex items-center gap-3 text-gray-600 border-t border-gray-300">
+          <button
+            onClick={() => onLike?.(id)}
+            className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-gray-50 active:scale-95 transition"
+            aria-label={`Like perception ${id}`}
+            style={{ touchAction: "manipulation" }}
+          >
+            <HeartIcon className="h-5 w-5 text-gray-700" />
             <span className="text-sm">{likes}</span>
           </button>
+
           <button
-            onClick={() => {
-              if (!detailView) {
-                router.push(`/perceptions/${id}`);
-              }
-            }} className={`flex items-center space-x-1 hover:text-blue-500 ${detailView ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+            onClick={() => (detailView ? null : router.push(`/perceptions/${id}`))}
             disabled={detailView}
+            className={`flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-gray-50 active:scale-95 transition ${detailView ? "opacity-50 cursor-not-allowed" : ""}`}
+            aria-label={`View comments for perception ${id}`}
+            style={{ touchAction: "manipulation" }}
           >
-            <ChatBubbleOvalLeftIcon className="h-5 w-5" />
+            <ChatBubbleOvalLeftIcon className="h-5 w-5 text-gray-700" />
             <span className="text-sm">{comments}</span>
           </button>
+
+          {/* optional extra actions could go here (share, bookmark...) */}
         </div>
       </div>
 
@@ -219,17 +261,19 @@ export default function PerceptionCard({
       {showImagePreview &&
         createPortal(
           <div
-            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4"
             onClick={() => setShowImagePreview(false)}
           >
             <img
               src={media}
               alt=""
-              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+              className="max-w-full max-h-[92vh] object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}
+              loading="lazy"
+              decoding="async"
             />
           </div>,
-          document.body
+          typeof document !== "undefined" ? document.body : null
         )}
     </>
   );

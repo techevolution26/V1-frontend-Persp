@@ -87,12 +87,13 @@ export default function TopicsPage() {
 
   if (loading || meLoading) {
     return (
-      <div className="p-4 max-w-3xl mx-auto">
-        <Spinner />
-        <p className="mt-2 text-gray-600">Loading topics…</p>
+      <div className="p-4 max-w-3xl mx-auto min-h-[40vh] flex flex-col items-center justify-center">
+        <Spinner size={56} thickness={5} className="text-indigo-600" label="Loading topics" />
+        <p className="mt-3 text-gray-600">Loading topics…</p>
       </div>
     );
   }
+
   if (error) {
     return (
       <p className="text-red-500 p-4 max-w-3xl mx-auto">{error}</p>

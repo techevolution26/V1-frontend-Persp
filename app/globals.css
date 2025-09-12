@@ -27,13 +27,161 @@ body {
 
 
 @keyframes shake {
-  0%   { transform: translateX(0); }
-  25%  { transform: translateX(-3px); }
-  50%  { transform: translateX(3px); }
-  75%  { transform: translateX(-3px); }
-  100% { transform: translateX(0); }
+  0% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-3px);
+  }
+
+  50% {
+    transform: translateX(3px);
+  }
+
+  75% {
+    transform: translateX(-3px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
 }
 
 .animate-shake {
   animation: shake 0.6s ease-in-out;
+}
+
+/* =========================
+   Mobile-friendly overrides (safe for PostCSS)
+   Add at the end of globals.css
+   ========================= */
+
+@media (max-width: 768px) {
+
+  /* Hide the fixed left sidebar so main content can be full width */
+  aside.fixed.left-0.top-0,
+  aside.w-16 {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  /* Remove the desktop left padding applied to the main wrapper */
+  body>* .pl-16 {
+    padding-left: 0 !important;
+  }
+
+  /* Header tweaks: reduce padding and make search fluid */
+  header.px-6.py-4 {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    min-height: 3.5rem !important;
+  }
+
+  /* Make the search input expand to available width on mobile */
+  header form.relative.w-48 {
+    width: calc(100% - 96px) !important;
+    /* leave room for logo / icons */
+    max-width: 100% !important;
+  }
+
+  header form.relative.w-48 input {
+    width: 100% !important;
+  }
+
+  /* Topics carousel: tighter tiles and sensible min-widths so the row scrolls */
+  .relative.rounded-2xl.p-4 .flex {
+    gap: 0.6rem !important;
+    padding-bottom: 6px !important;
+    -webkit-overflow-scrolling: touch;
+    /* smooth momentum scroll on iOS */
+  }
+
+  .relative.rounded-2xl.p-4 .flex>div {
+    width: 64px !important;
+    min-width: 64px !important;
+    max-width: 72px !important;
+  }
+
+  .relative.rounded-2xl.p-4 .flex img {
+    border-radius: 9999px !important;
+    object-fit: cover !important;
+  }
+
+  /* Perception grid: force single-column on small screens for readability */
+  /* Target the grid container rather than fragile Tailwind utility selectors */
+  main .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Modal sizing: full-width friendly on small screens */
+  .fixed.inset-0.bg-black\/50 .bg-white.max-w-lg,
+  .fixed.inset-0.bg-black\/50 .bg-white.p-6.w-full.max-w-lg {
+    width: 94% !important;
+    max-width: 94% !important;
+    padding: 1rem !important;
+    max-height: 90vh !important;
+    overflow: auto !important;
+    border-radius: 0.75rem !important;
+  }
+
+  /* Slightly increase touch target spacing for sidebar-like navs (if visible) */
+  nav.flex.flex-col.items-center.space-y-6 {
+    gap: 0.5rem !important;
+  }
+
+  /* Avatar / profile sizes */
+  nav img.h-8.w-8,
+  .h-8.w-8.rounded-full {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  /* Ensure scrollable carousels have native momentum */
+  .no-scrollbar {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent inputs from being too small */
+  input[type="text"],
+  input[type="search"],
+  textarea {
+    font-size: 15px !important;
+  }
+
+  /* Small improvement: reduce heavy shadows on mobile for performance/readability */
+  .shadow-sm, .shadow-md, .shadow-lg {
+    box-shadow: none !important;
+  }
+}
+
+/* Extra: slightly adjust carousel for very small phones <= 420px */
+@media (max-width: 420px) {
+  .relative.rounded-2xl.p-4 .flex>div {
+    width: 56px !important;
+    min-width: 56px !important;
+  }
+
+  header form.relative.w-48 {
+    width: calc(100% - 72px) !important;
+  }
+}
+
+/* small helper for touch */
+.touch-manipulation {
+  -ms-touch-action: manipulation;
+  touch-action: manipulation;
+}
+
+/* ensure horizontal scroll area hides scrollbar but keeps momentum */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }

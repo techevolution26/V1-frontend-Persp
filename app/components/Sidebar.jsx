@@ -16,8 +16,7 @@ export default function Sidebar({ onNewClick = () => { }, onBellClick = () => { 
         onClick={onNewClick}
         title="New Perception"
         aria-label="Create New"
-        className="hover:bg-gray-100 p-2 rounded-full transition"
-      >
+        className="hover:bg-gray-100 p-2.5 rounded-full transition touch-manipulation">
         <PlusIcon className="h-6 w-6 text-gray-600" />
       </button>
 

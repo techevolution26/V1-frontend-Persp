@@ -1,4 +1,4 @@
-//app/messages/page.jsx
+// app/messages/page.jsx
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
@@ -11,55 +11,60 @@ import ConversationSidebar from "../components/ConversationSidebar";
 import ChatWindow from "../components/ChatWindow";
 import MessageInput from "../components/MessageInput";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 
 function MessagesHubContent({ peerId }) {
   const { user: me, loading: meLoading } = useCurrentUser();
   const token = typeof window !== "undefined" && localStorage.getItem("token");
   const convosQuery = useConversations(token);
-
   const router = useRouter();
 
   const messagesQuery = useMessages(peerId, token);
   const queryClient = useQueryClient();
 
-  // Real‑time message stream
+  // sidebar state for mobile
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Real-time message stream
   useMessageStream(peerId, (newMsg) => {
-    queryClient.setQueryData(
-      ["messages", peerId],
-      (old) => {
-        if (!old) return old;
-        const updated = { ...old };
-        updated.pages[0].data.push(newMsg);
-        return updated;
-      }
-    );
+    queryClient.setQueryData(["messages", peerId], (old) => {
+      if (!old) return old;
+      const updated = { ...old };
+      updated.pages[0].data.push(newMsg);
+      return updated;
+    });
   });
 
   if (meLoading) return <p>Loading your account…</p>;
   if (!me) return <p>Please log in to view messages.</p>;
-  // console.log({ peerId, messages: messagesQuery.data, isFetching: messagesQuery.isFetching });  //& debuging  here to remove later
 
   return (
-    <div className="flex h-screen w-full bg-gray-50">
+    <div className="flex h-screen w-full bg-gray-50 min-h-0">
+      {/* Sidebar: on desktop it's visible; on mobile it's an overlay controlled by sidebarOpen */}
       <ConversationSidebar
         conversations={convosQuery.data || []}
         selectedPeer={peerId}
         onSelect={(id) => {
-          // console.log("selecting peer:", id);
+          setSidebarOpen(false);
           router.push(`/messages?peer=${id}`);
         }}
         className="h-full border-r border-gray-200"
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onOpen={() => setSidebarOpen(true)}   // <-- new
+
       />
 
       {peerId ? (
-        <div className="flex flex-1 flex-col h-full">
+        <div className="flex flex-1 flex-col h-full min-h-0">
           <div className="flex-1 overflow-hidden">
             <ChatWindow
+              peerId={peerId}
               messagesPages={messagesQuery.data}
               fetchNextPage={messagesQuery.fetchNextPage}
               hasNextPage={messagesQuery.hasNextPage}
               isLoading={messagesQuery.isLoading}
+              onOpenSidebar={() => setSidebarOpen(true)}
               className="h-full"
             />
           </div>
